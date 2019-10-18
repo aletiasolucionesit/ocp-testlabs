@@ -16,11 +16,9 @@
     src: cloud_init.cfg.j2
     dest: "{{ terraform_dir }}/cloud_init.cfg"
 
-- name: execute terraform init
-  shell: "chdir={{ terraform_dir }} terraform init -get=true -input=false"
 
-- name: execute terraform plan
-  shell: "chdir={{ terraform_dir }} terraform plan -out=tfplan -input=false -detailed-exitcode"
-
-- name: execute terraform apply
-  shell: "chdir={{ terraform_dir }} terraform -input=false -auto-approve=true tfplan"
+- name: deploy terraform
+  terraform:
+    project_path: "{{ terraform_dir }}"
+    state: "present"
+    force_init: true
