@@ -1,0 +1,10 @@
+---
+# tasks file for terraform-libvirt
+- name: import install golang
+  import_tasks: install-golang.yaml
+
+- name: check libvirt prerequisites
+  import_tasks: libvirt-prerequisites.yaml
+
+- name: install terraform and terraform-libvirt
+  import_tasks: install-terraform.yaml

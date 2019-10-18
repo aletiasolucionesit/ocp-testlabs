@@ -1,0 +1,9 @@
+- name: Prepare KVM Virtual machines
+  hosts: localhost
+  pre_tasks:
+    - name: check if sudo is passwordless
+      debug:
+        msg: "It is ok"
+      become: true
+  roles:
+    - terraform-libvirt

@@ -1,0 +1,16 @@
+- name: install golang
+  dnf:
+    name: golang-bin
+    state: latest
+  become: true
+
+- name: configure GOPATH variable
+  lineinfile:
+    path: ~/.bashrc
+    state: present
+    line: "export GOPATH=$HOME/go"
+
+- name: create go directory
+  file:
+    path: ~/go
+    state: directory

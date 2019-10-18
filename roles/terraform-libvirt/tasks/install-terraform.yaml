@@ -1,0 +1,21 @@
+- name: install unzip
+  dnf:
+    name: unzip
+    state: latest
+  become: true
+
+- name: download terraform
+  unarchive:
+    src: https://releases.hashicorp.com/terraform/0.11.14/terraform_0.11.14_linux_amd64.zip
+    dest: /usr/local/bin
+    remote_src: true
+  become: true
+
+- name: create terraform plugins directory
+  file:
+    path: ~/.terraform.d/plugins
+    state: directory
+
+- name: install terraform-livbirt
+  shell: "GOBIN=~/.terraform.d/plugins go get -u github.com/dmacvicar/terraform-provider-libvirt"
+

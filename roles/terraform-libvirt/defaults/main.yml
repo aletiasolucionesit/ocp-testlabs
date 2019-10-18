@@ -1,0 +1,11 @@
+---
+# defaults file for terraform-libvirt
+root_pass: redhat
+libvirt_packages:
+  - bridge-utils 
+  - libvirt 
+  - virt-install 
+  - qemu-kvm
+  - virt-top
+  - libguestfs-tools
+  - virt-manager

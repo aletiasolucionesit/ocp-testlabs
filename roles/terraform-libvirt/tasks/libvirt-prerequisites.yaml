@@ -1,0 +1,11 @@
+- name: install libvirt packages
+  dnf:
+    name: "{{ libvirt_packages }}"
+    state:  latest
+  become: true
+
+- name: start and enable libvirtd daemon
+  systemd:
+    name: libvirtd
+    enabled: true
+    state: started
