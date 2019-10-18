@@ -1,5 +1,5 @@
 - name: install golang
-  dnf:
+  package:
     name: golang-bin
     state: latest
   become: true
