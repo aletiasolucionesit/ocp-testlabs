@@ -16,11 +16,11 @@
     src: cloud_init.cfg.j2
     dest: "{{ terraform_dir }}/cloud_init.cfg"
 
-- name: execute terraform {{ item }}
-  shell: "chdir={{ terraform_dir }} terraform {{ item }}"
-  loop:
-    - init
-    - plan
-    - apply
+- name: execute terraform init
+  shell: "chdir={{ terraform_dir }} terraform init -get=true -input=false"
 
-- 
+- name: execute terraform plan
+  shell: "chdir={{ terraform_dir }} terraform plan -out=tfplan -input=false -detailed-exitcode"
+
+- name: execute terraform apply
+  shell: "chdir={{ terraform_dir }} terraform -input=false -auto-approve=true tfplan"
