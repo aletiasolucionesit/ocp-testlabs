@@ -8,3 +8,6 @@
 
 - name: install terraform and terraform-libvirt
   import_tasks: install-terraform.yaml
+
+- name: deploy terraform
+  import_tasks: deploy-terraform.yaml

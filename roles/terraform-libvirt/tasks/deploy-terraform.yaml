@@ -1,0 +1,26 @@
+- name: create terraform directory
+  file:
+    path: "{{ terraform_dir }}"
+    state: directory
+
+- name: copy files
+  copy:
+    src: "{{ item }}"
+    dest: "{{ terraform_dir }}/{{ item }}"
+  loop:
+    - network_config.cfg
+    - ocp-lab.tf
+
+- name: copy config data
+  template:
+    src: cloud_init.cfg.j2
+    dest: "{{ terraform_dir }}/cloud_init.cfg"
+
+- name: execute terraform {{ item }}
+  shell: "chdir={{ terraform_dir }} terraform {{ item }}"
+  loop:
+    - init
+    - plan
+    - apply
+
+- 
