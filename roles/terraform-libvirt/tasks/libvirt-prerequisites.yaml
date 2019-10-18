@@ -1,5 +1,5 @@
 - name: install libvirt packages
-  package:
+  dnf:
     name: "{{ libvirt_packages }}"
     state:  latest
   become: true

@@ -1,5 +1,5 @@
 - name: install unzip
-  package:
+  dnf:
     name: unzip
     state: latest
   become: true
