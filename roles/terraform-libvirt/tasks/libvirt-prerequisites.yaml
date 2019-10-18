@@ -9,3 +9,14 @@
     name: libvirtd
     enabled: true
     state: started
+
+- name: configure ocp-net
+  virt_net:
+    command: define
+    name: ocp-net
+    xml: '{{ lookup("file", "files/ocp-net.xml") }}'
+
+- name: start ocp-net
+  virt_net:
+    state: active
+    name: ocp-net
