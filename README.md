@@ -1,1 +1,1 @@
-# ocp-v3-testlabs
+# ocp-testlabs
