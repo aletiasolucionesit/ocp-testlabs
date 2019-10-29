@@ -1,0 +1,41 @@
+- name: Deploy LoadBlancer machine
+  hosts: loadbalancer.essi.labs
+  remote_user: root
+  vars:
+    ports:
+      - 80
+      - 443
+      - 22623
+      - 6443
+
+  tasks:
+    - name: Install {{ item }} package
+      yum:
+        name: "{{ item }}"
+        state: latest
+      loop:
+        - haproxy
+        - firewalld
+
+    - name: Create HAProxy config file
+      copy:
+        dest: /etc/haproxy/haproxy.cfg
+        src: files/haproxy.cfg 
+        mode: 0644
+
+    - name: Start and enable {{ item }} service
+      systemd:
+        name: "{{ item }}"
+        enabled: true
+        state: started
+      loop:
+        - firewalld
+        - haproxy
+
+    - name: Open firewall ports
+      firewalld:
+        state: enabled
+        immediate: true
+        permanent: true
+        port: "{{ item }}/TCP"
+      loop: "{{ ports }}"

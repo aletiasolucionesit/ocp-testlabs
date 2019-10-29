@@ -10,13 +10,15 @@
     enabled: true
     state: started
 
-- name: configure ocp-net
+- name: configure {{ item }}
   virt_net:
     command: define
-    name: ocp-net
-    xml: '{{ lookup("file", "files/ocp-net.xml") }}'
+    name: "{{ item }}"
+    xml: '{{ lookup("file", "files/"+item+".xml") }}'
+  loop: "{{ ocp-net }}"
 
-- name: start ocp-net
+- name: start {{ item }}
   virt_net:
     state: active
-    name: ocp-net
+    name: "{{ item }}"
+  loop: "{{ ocp-net }}"

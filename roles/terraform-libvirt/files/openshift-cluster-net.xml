@@ -1,0 +1,25 @@
+<network>
+  <name>openshift-cluster</name>
+  <forward mode='nat'>
+    <nat>
+      <port start='1024' end='65535'/>
+    </nat>
+  </forward>
+  <mac address='bb:cc:dd:ee:aa:00'/>
+  <domain name='essi.labs' localOnly='no'/>
+  <dns>
+	  <forwarder addr="192.168.130.10"/>
+  </dns>
+  <ip address='192.168.131.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.131.10' end='192.168.131.254'/>
+      <bootp file="pxelinux.0" server="192.168.131.20"/>
+      <host mac='bb:cc:dd:ee:aa:10' name='loadbalancer.essi.labs' ip='192.168.131.10'/>
+      <host mac='bb:cc:dd:ee:aa:20' name='www.essi.labs' ip='192.168.131.20'/>
+      <host mac='bb:cc:dd:ee:aa:11' name='bootstrap.essi.labs' ip='192.168.131.11'/>
+      <host mac='bb:cc:dd:ee:aa:12' name='master.essi.labs' ip='192.168.131.12'/>
+      <host mac='bb:cc:dd:ee:aa:13' name='worker-1.essi.labs' ip='192.168.131.13'/>
+    </dhcp>
+  </ip>
+</network>
+

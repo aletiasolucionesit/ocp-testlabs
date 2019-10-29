@@ -1,0 +1,85 @@
+- name: Deploy WWW machine
+  hosts: www.essi.labs
+  remote_user: root
+
+  tasks:
+    - name: Install {{ item }} package
+      yum:
+        name: "{{ item }}"
+        state: latest
+      loop:
+        - httpd
+        - firewalld
+        - tftp-server
+        - syslinux
+
+    - name: Create www directories
+      file:
+        path: /var/www/html/{{ item }} 
+        group: apache
+        state: directory
+        mode: 0755
+        owner: apache
+      loop:
+        - isos
+        - ignition
+
+    - name: Get rhcos iso files
+      get_url:
+        dest: /var/www/html/isos
+        url: "{{ item }}"
+        owner: apache
+        group: apache
+        mode: 0644
+      loop:
+        - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.1/4.1.0/rhcos-4.1.0-x86_64-installer-initramfs.img
+        - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.1/4.1.0/rhcos-4.1.0-x86_64-installer-kernel
+        - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.1/4.1.0/rhcos-4.1.0-x86_64-installer.iso
+        - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.1/4.1.0/rhcos-4.1.0-x86_64-metal-bios.raw.gz
+
+    - name: Create syslinux files
+      copy:
+        dest: /var/lib/tftpboot/{{ item }} 
+        src: /usr/share/syslinux/{{ item }}
+        remote_src: yes
+      loop:
+        - pxelinux.0
+        - menu.c32
+        - mboot.c32
+        - chain.c32
+
+    - name: Create pxelinux.cfg directory
+      file:
+        path: /var/lib/tftpboot/pxelinux.cfg
+        state: directory
+
+    - name: Create menu file
+      copy:
+        dest: /var/lib/tftpboot/pxelinux.cfg/default
+        content: |
+          default pxeboot
+          prompt 0
+          timeout 10
+          LABEL pxeboot
+              KERNEL http://www.essi.labs/isos/rhcos-4.1.0-x86_64-installer-kernel
+              APPEND ip=dhcp rd.neednet=1 initrd=http://www.essi.labs/isos/rhcos-4.1.0-x86_64-installer-initramfs.img console=ttyS0 coreos.inst=yes coreos.inst.install_dev=vda coreos.inst.image_url=http://www.essi.labs/isos/rhcos-4.1.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://www.essi.labs/ignition/bootstrap.ign
+
+    - name: Start and enable {{ item }}
+      systemd:
+        name: "{{ item }}"
+        enabled: true
+        state: started
+      loop:
+        - httpd
+        - firewalld
+        - tftp
+
+    - name: Create firewall rules
+      firewalld:
+        state: enabled
+        service: "{{ item }}"
+        immediate: true
+        permanent: true    
+      loop:
+        - http
+        - tftp

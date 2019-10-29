@@ -11,21 +11,34 @@ resource "libvirt_volume" "os_image" {
   source = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1907.qcow2"
 }
 
-resource "libvirt_volume" "ocp-bastion-qcow2" {
-  name = "ocp-bastion-qcow2"
+resource "libvirt_volume" "ocp-dns-qcow2" {
+  name = "ocp-dns-qcow2"
   base_volume_id = "${libvirt_volume.os_image.id}"
+}
+
+resource "libvirt_volume" "ocp-lb-qcow2" {
+  name = "ocp-lb-qcow2"
+  base_volume_id = "${libvirt_volume.os_image.id}"
+}
+
+resource "libvirt_volume" "ocp-www-qcow2" {
+  name = "ocp-www-qcow2"
+  base_volume_id = "${libvirt_volume.os_image.id}"
+}
+
+resource "libvirt_volume" "ocp-bootstrap-qcow2" {
+  name = "ocp-bootstrap-qcow2"
+  size = "1073741824"
 }
 
 resource "libvirt_volume" "ocp-master-qcow2" {
-  name = "ocp-master-qcow2-${count.index}"
-  base_volume_id = "${libvirt_volume.os_image.id}"
-  count = 3
+  name = "ocp-master-qcow2"
+  size = "1073741824"
 }
 
-resource "libvirt_volume" "ocp-node-qcow2" {
-  name = "ocp-node-qcow2-${count.index}"
-  base_volume_id = "${libvirt_volume.os_image.id}"
-  count = 4
+resource "libvirt_volume" "ocp-worker-1-qcow2" {
+  name = "ocp-worker-1-qcow2"
+  size = "1073741824"
 }
 
 data "template_file" "user_data" {
@@ -48,19 +61,18 @@ resource "libvirt_cloudinit_disk" "commoninit" {
 
 
 # Create the machines
-resource "libvirt_domain" "ocp-master" {
-  count = 3
-  name   = "ocp-master-${count.index+1}"
+resource "libvirt_domain" "ocp-dns" {
+  name   = "ocp-dns"
   memory = "2048"
   vcpu   = 1
 
   cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
 
   network_interface {
-    network_name = "ocp-net"
-    hostname       = "ocp-master-${count.index+1}"
-    addresses      = ["10.10.10.1${count.index+1}"]
-    mac            = "AA:BB:CC:11:22:1${count.index}"
+    network_name = "openshift-dns"
+    hostname       = "dns.essi.labs}"
+    addresses      = ["192.168.130.10"]
+    mac            = "aa:bb:cc:dd:ee:10"
     wait_for_lease = true
   }
   console {
@@ -74,7 +86,7 @@ resource "libvirt_domain" "ocp-master" {
     target_port = "1"
   }
   disk {
-    volume_id = "${libvirt_volume.ocp-master-qcow2.*.id[count.index]}"
+    volume_id = "${libvirt_volume.ocp-dns-qcow2.id}"
   }
 
   graphics {
@@ -84,19 +96,89 @@ resource "libvirt_domain" "ocp-master" {
   }
 }
 
-resource "libvirt_domain" "ocp-node" {
-  count = 4
-  name   = "ocp-node-${count.index+1}"
+
+resource "libvirt_domain" "ocp-lb" {
+  name   = "ocp-lb"
+  memory = "2048"
+  vcpu   = 1
+
+  cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
+
+  network_interface {
+    network_name = "ocp-cluster"
+    hostname       = "loadbalancer"
+    addresses      = ["192.168.131.10"]
+    mac            = "bb:cc:dd:ee:aa:10"
+    wait_for_lease = true
+  }
+  console {
+    type        = "pty"
+    target_port = "0"
+    target_type = "serial"
+  }
+  console {
+    type        = "pty"
+    target_type = "virtio"
+    target_port = "1"
+  }
+  disk {
+    volume_id = "${libvirt_volume.ocp-lb-qcow2.id}"
+  }
+
+  graphics {
+    type        = "spice"
+    listen_type = "address"
+    autoport    = true
+  }
+}
+
+resource "libvirt_domain" "ocp-www" {
+  name   = "ocp-www"
+  memory = "2048"
+  vcpu   = 1
+
+  cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
+
+  network_interface {
+    network_name = "ocp-cluster"
+    hostname       = "www"
+    addresses      = ["192.168.131.20"]
+    mac            = "bb:cc:dd:ee:aa:20"
+    wait_for_lease = true
+  }
+  console {
+    type        = "pty"
+    target_port = "0"
+    target_type = "serial"
+  }
+  console {
+    type        = "pty"
+    target_type = "virtio"
+    target_port = "1"
+  }
+  disk {
+    volume_id = "${libvirt_volume.ocp-www-qcow2.id}"
+  }
+
+  graphics {
+    type        = "spice"
+    listen_type = "address"
+    autoport    = true
+  }
+}
+
+resource "libvirt_domain" "ocp-bootstrap" {
+  name   = "ocp-bootstrap"
   memory = "4096"
   vcpu   = 2
 
-  cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
+  #cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
 
   network_interface {
-    network_name = "ocp-net"
-    hostname       = "ocp-node-${count.index+1}"
-    addresses      = ["10.10.10.2${count.index+1}"]
-    mac            = "AA:BB:CC:11:22:2${count.index+1}"
+    network_name = "ocp-cluster"
+    hostname       = "bootstrap"
+    addresses      = ["192.168.131.11"]
+    mac            = "bb:cc:dd:ee:aa:11"
     wait_for_lease = true
   }
   console {
@@ -110,7 +192,7 @@ resource "libvirt_domain" "ocp-node" {
     target_port = "1"
   }
   disk {
-    volume_id = "${libvirt_volume.ocp-node-qcow2.*.id[count.index]}"
+    volume_id = "${libvirt_volume.ocp-bootstrap-qcow2.id}"
   }
 
   graphics {
@@ -120,18 +202,18 @@ resource "libvirt_domain" "ocp-node" {
   }
 }
 
-resource "libvirt_domain" "ocp-bastion" {
-  name   = "ocp-bastion"
-  memory = "2048"
-  vcpu   = 1
+resource "libvirt_domain" "ocp-master" {
+  name   = "ocp-master"
+  memory = "6144"
+  vcpu   = 4
 
-  cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
+  #cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
 
   network_interface {
-    network_name = "ocp-net"
-    hostname       = "ocp-bastion"
-    addresses      = ["10.10.10.10"]
-    mac            = "AA:BB:CC:11:22:10"
+    network_name = "ocp-cluster"
+    hostname       = "master"
+    addresses      = ["192.168.131.12"]
+    mac            = "bb:cc:dd:ee:aa:12"
     wait_for_lease = true
   }
   console {
@@ -145,7 +227,7 @@ resource "libvirt_domain" "ocp-bastion" {
     target_port = "1"
   }
   disk {
-    volume_id = "${libvirt_volume.ocp-bastion-qcow2.id}"
+    volume_id = "${libvirt_volume.ocp-master-qcow2.id}"
   }
 
   graphics {
@@ -154,5 +236,39 @@ resource "libvirt_domain" "ocp-bastion" {
     autoport    = true
   }
 }
-# IPs: use wait_for_lease true or after creation use terraform refresh and terraform show for the ips of domain
+
+resource "libvirt_domain" "ocp-worker-1" {
+  name   = "ocp-worker-1"
+  memory = "6144"
+  vcpu   = 4
+
+  #cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
+
+  network_interface {
+    network_name = "ocp-cluster"
+    hostname       = "worker-1"
+    addresses      = ["192.168.131.13"]
+    mac            = "bb:cc:dd:ee:aa:13"
+    wait_for_lease = true
+  }
+  console {
+    type        = "pty"
+    target_port = "0"
+    target_type = "serial"
+  }
+  console {
+    type        = "pty"
+    target_type = "virtio"
+    target_port = "1"
+  }
+  disk {
+    volume_id = "${libvirt_volume.ocp-worker-1-qcow2.id}"
+  }
+
+  graphics {
+    type        = "spice"
+    listen_type = "address"
+    autoport    = true
+  }
+}
 

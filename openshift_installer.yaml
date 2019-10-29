@@ -1,0 +1,14 @@
+- name: Prepare openshift-install
+  hosts: localhost
+
+  tasks:
+    - name: Download installer
+      unarchive:
+        src: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest-4.1/openshift-install-linux-4.1.20.tar.gz"
+        dest: "{{ terraform_dir }}"
+
+    - name: Copy instructions
+      copy:
+        src: files/Instructions.md
+        dest: "{{ terraform_dir }}/Instructions.md"
+

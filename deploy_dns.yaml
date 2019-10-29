@@ -1,0 +1,50 @@
+- name: Deploy DNS machine
+  hosts: dns.essi.labs
+  remote_user: root
+
+  tasks:
+    - name: Install {{ item }}
+      yum:
+        name: "{{ item }}"
+        state: latest
+      loop:
+        - dnsmasq
+        - firewalld
+
+    - name: Configure dnsmasq main file
+      copy:
+        path: /etc/dnsmasq.conf
+        content: |
+					local=/essi.labs/
+					address=/apps.essi.labs/192.168.131.10
+					srv-host=_etcd-server-ssl._tcp.essi.labs,master.essi.labs,2380,0,10
+					no-hosts
+					addn-hosts=/etc/dnsmasq.openshift.addnhosts
+					conf-dir=/etc/dnsmasq.d,.rpmnew,.rpmsave,.rpmorig
+
+		- name: Configure dnsmasq OCP file
+      copy:
+        path: /etc/dnsmasq.openshift.addnhosts
+        content: |
+          192.168.130.10 dns.essi.labs
+          192.168.131.10 loadbalancer.essi.labs  api.essi.labs  api-int.essi.labs
+          192.168.131.11 bootstrap.essi.labs
+          192.168.131.12 master.essi.labs  etcd-0.essi.labs
+          192.168.131.13 worker-1.essi.labs
+          192.168.131.20 www.essi.labs
+
+    - name: Start and enable {{ item }}
+      systemd:
+        name: "{{ item }}"
+        enabled: true 
+        state: started
+      loop:
+        - dnsmasq
+        - firealld
+
+    - name: Create dnsmasq firewall rule
+      firewalld:
+        state: enabled
+        service: dns
+        immediate: true
+        permanent: true

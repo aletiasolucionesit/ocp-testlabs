@@ -7,3 +7,28 @@
       become: true
   roles:
     - terraform-libvirt
+  tasks:
+    - name: Add DNS host to play
+      add_host:
+        hostname: dns.essi.labs
+        ansible_host: 192.168.130.10
+    - name: Add HTTP host to play
+      add_host:
+        hostname: www.essi.labs
+        ansible_host: 192.168.131.20
+    - name: Add HAProxy host to play
+      add_host:
+        hostname: loadbalancer.essi.labs
+        ansible_host: 192.168.131.10
+
+- name: Prepare DNS machine
+  import_playbook: deploy_dns.yaml
+
+- name: Prepare WWW machine
+  import_playbook: deploy_www.yaml
+
+- name: Prepare HAProxy machine
+  import_playbook: deploy_haproxy.yaml
+
+- name: Prepare OpenShift installer
+  import_playbook: openshift_installer.yaml
