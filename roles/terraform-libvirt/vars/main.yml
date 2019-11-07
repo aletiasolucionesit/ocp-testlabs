@@ -1,5 +1,5 @@
 ---
 # vars file for terraform-libvirt
-ocp-net:
+ocp_net:
   - openshift-dns
   - openshift-cluster

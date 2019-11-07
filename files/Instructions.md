@@ -34,6 +34,7 @@ platform:
   none: {}
 pullSecret: '<INSERT_YOUR_PULL_SECRET_HERE>'
 sshKey: '<INSERT_YOUR_PUBLIC_SSH_KEY_HERE>'
+EOF
 ```
 
 5. Create a hardlink from install-config.yaml `ln install-config.yaml install-config.yaml.hardlink`

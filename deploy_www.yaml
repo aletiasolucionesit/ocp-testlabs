@@ -3,6 +3,16 @@
   remote_user: root
 
   tasks:
+    - name: Register and subscribe
+      redhat_subscription:
+        username: "{{ rh_user }}"
+        auto_attach: yes
+        password: "{{ rh_pass }}"
+        state: present
+      when:
+        - ansible_distribution == "RedHat"
+        - ( rh_user is defined and rh_pass is defined)
+
     - name: Install {{ item }} package
       yum:
         name: "{{ item }}"
@@ -55,14 +65,21 @@
 
     - name: Create menu file
       copy:
-        dest: /var/lib/tftpboot/pxelinux.cfg/default
+        dest: /var/lib/tftpboot/pxelinux.cfg/{{ item.ip_hex }}
         content: |
           default pxeboot
           prompt 0
           timeout 10
           LABEL pxeboot
               KERNEL http://www.essi.labs/isos/rhcos-4.1.0-x86_64-installer-kernel
-              APPEND ip=dhcp rd.neednet=1 initrd=http://www.essi.labs/isos/rhcos-4.1.0-x86_64-installer-initramfs.img console=ttyS0 coreos.inst=yes coreos.inst.install_dev=vda coreos.inst.image_url=http://www.essi.labs/isos/rhcos-4.1.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://www.essi.labs/ignition/bootstrap.ign
+              APPEND ip=dhcp rd.neednet=1 initrd=http://www.essi.labs/isos/rhcos-4.1.0-x86_64-installer-initramfs.img console=ttyS0 coreos.inst=yes coreos.inst.install_dev=vda coreos.inst.image_url=http://www.essi.labs/isos/rhcos-4.1.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://www.essi.labs/ignition/{{ item.name }}.ign
+      loop:
+        - name: bootstrap
+          ip_hex: C0A8830B
+        - name: master
+          ip_hex: C0A8830C
+        - name: worker
+          ip_hex: default
 
     - name: Start and enable {{ item }}
       systemd:

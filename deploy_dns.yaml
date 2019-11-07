@@ -3,6 +3,16 @@
   remote_user: root
 
   tasks:
+    - name: Register and subscribe
+      redhat_subscription:
+        username: "{{ rh_user }}"
+        auto_attach: yes
+        password: "{{ rh_pass }}"
+        state: present
+      when:
+        - ansible_distribution == "RedHat"
+        - ( rh_user is defined and rh_pass is defined)
+
     - name: Install {{ item }}
       yum:
         name: "{{ item }}"
@@ -13,18 +23,18 @@
 
     - name: Configure dnsmasq main file
       copy:
-        path: /etc/dnsmasq.conf
+        dest: /etc/dnsmasq.conf
         content: |
-					local=/essi.labs/
-					address=/apps.essi.labs/192.168.131.10
-					srv-host=_etcd-server-ssl._tcp.essi.labs,master.essi.labs,2380,0,10
-					no-hosts
-					addn-hosts=/etc/dnsmasq.openshift.addnhosts
-					conf-dir=/etc/dnsmasq.d,.rpmnew,.rpmsave,.rpmorig
+          local=/essi.labs/
+          address=/apps.essi.labs/192.168.131.10
+          srv-host=_etcd-server-ssl._tcp.essi.labs,master.essi.labs,2380,0,10
+          no-hosts
+          addn-hosts=/etc/dnsmasq.openshift.addnhosts
+          conf-dir=/etc/dnsmasq.d,.rpmnew,.rpmsave,.rpmorig
 
-		- name: Configure dnsmasq OCP file
+    - name: Configure dnsmasq OCP file
       copy:
-        path: /etc/dnsmasq.openshift.addnhosts
+        dest: /etc/dnsmasq.openshift.addnhosts
         content: |
           192.168.130.10 dns.essi.labs
           192.168.131.10 loadbalancer.essi.labs  api.essi.labs  api-int.essi.labs
@@ -40,7 +50,7 @@
         state: started
       loop:
         - dnsmasq
-        - firealld
+        - firewalld
 
     - name: Create dnsmasq firewall rule
       firewalld:

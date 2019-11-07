@@ -7,8 +7,17 @@
       - 443
       - 22623
       - 6443
-
   tasks:
+    - name: Register and subscribe
+      redhat_subscription:
+        username: "{{ rh_user }}"
+        auto_attach: yes
+        password: "{{ rh_pass }}"
+        state: present
+      when:
+        - ansible_distribution == "RedHat"
+        - ( rh_user is defined and rh_pass is defined)
+
     - name: Install {{ item }} package
       yum:
         name: "{{ item }}"
@@ -22,6 +31,12 @@
         dest: /etc/haproxy/haproxy.cfg
         src: files/haproxy.cfg 
         mode: 0644
+
+    - name: Change boolean
+      seboolean:
+        name: haproxy_connect_any
+        state: yes
+        persistent: yes
 
     - name: Start and enable {{ item }} service
       systemd:
@@ -37,5 +52,5 @@
         state: enabled
         immediate: true
         permanent: true
-        port: "{{ item }}/TCP"
+        port: "{{ item }}/tcp"
       loop: "{{ ports }}"

@@ -1,14 +1,26 @@
 - name: Prepare openshift-install
-  hosts: localhost
+  hosts: www.essi.labs
+  gather_facts: false
 
   tasks:
+    - name: Create "{{ ocp_install_dir }}"
+      file:
+        path: "{{ ocp_install_dir }}"
+        state: directory
+
     - name: Download installer
       unarchive:
-        src: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest-4.1/openshift-install-linux-4.1.20.tar.gz"
-        dest: "{{ terraform_dir }}"
+        src: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest-4.1/openshift-install-linux-4.1.22.tar.gz"
+        dest: "{{ ocp_install_dir }}"
+        remote_src: true
+
+    - name: Download openshift-client
+      unarchive:
+        src: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest-4.1/openshift-client-linux-4.1.22.tar.gz"
+        dest: /usr/local/bin/
+        remote_src: true
 
     - name: Copy instructions
       copy:
         src: files/Instructions.md
-        dest: "{{ terraform_dir }}/Instructions.md"
-
+        dest: "{{ ocp_install_dir }}/Instructions.md"

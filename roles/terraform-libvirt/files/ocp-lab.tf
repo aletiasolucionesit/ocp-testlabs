@@ -8,7 +8,7 @@ provider "libvirt" {
 
 resource "libvirt_volume" "os_image" {
   name = "os_image"
-  source = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1907.qcow2"
+  source = "${var.image_id}"
 }
 
 resource "libvirt_volume" "ocp-dns-qcow2" {
@@ -28,17 +28,17 @@ resource "libvirt_volume" "ocp-www-qcow2" {
 
 resource "libvirt_volume" "ocp-bootstrap-qcow2" {
   name = "ocp-bootstrap-qcow2"
-  size = "1073741824"
+  size = "10737418240"
 }
 
 resource "libvirt_volume" "ocp-master-qcow2" {
   name = "ocp-master-qcow2"
-  size = "1073741824"
+  size = "10737418240"
 }
 
 resource "libvirt_volume" "ocp-worker-1-qcow2" {
   name = "ocp-worker-1-qcow2"
-  size = "1073741824"
+  size = "10737418240"
 }
 
 data "template_file" "user_data" {
@@ -105,10 +105,10 @@ resource "libvirt_domain" "ocp-lb" {
   cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
 
   network_interface {
-    network_name = "ocp-cluster"
+    network_name = "openshift-cluster"
     hostname       = "loadbalancer"
     addresses      = ["192.168.131.10"]
-    mac            = "bb:cc:dd:ee:aa:10"
+    mac            = "aa:bb:cc:dd:00:10"
     wait_for_lease = true
   }
   console {
@@ -140,10 +140,10 @@ resource "libvirt_domain" "ocp-www" {
   cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
 
   network_interface {
-    network_name = "ocp-cluster"
+    network_name = "openshift-cluster"
     hostname       = "www"
     addresses      = ["192.168.131.20"]
-    mac            = "bb:cc:dd:ee:aa:20"
+    mac            = "aa:bb:cc:dd:00:20"
     wait_for_lease = true
   }
   console {
@@ -173,12 +173,17 @@ resource "libvirt_domain" "ocp-bootstrap" {
   vcpu   = 2
 
   #cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
+  boot_device {
+    dev = [ "hd", "network"]
+  }
+  
+  running = false
 
   network_interface {
-    network_name = "ocp-cluster"
+    network_name = "openshift-cluster"
     hostname       = "bootstrap"
     addresses      = ["192.168.131.11"]
-    mac            = "bb:cc:dd:ee:aa:11"
+    mac            = "aa:bb:cc:dd:00:11"
     wait_for_lease = true
   }
   console {
@@ -208,12 +213,17 @@ resource "libvirt_domain" "ocp-master" {
   vcpu   = 4
 
   #cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
+  boot_device {
+    dev = [ "hd", "network"]
+  }
+  
+  running = false
 
   network_interface {
-    network_name = "ocp-cluster"
+    network_name = "openshift-cluster"
     hostname       = "master"
     addresses      = ["192.168.131.12"]
-    mac            = "bb:cc:dd:ee:aa:12"
+    mac            = "aa:bb:cc:dd:00:12"
     wait_for_lease = true
   }
   console {
@@ -243,12 +253,17 @@ resource "libvirt_domain" "ocp-worker-1" {
   vcpu   = 4
 
   #cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
+  boot_device {
+    dev = [ "hd", "network"]
+  }
+  
+  running = false
 
   network_interface {
-    network_name = "ocp-cluster"
+    network_name = "openshift-cluster"
     hostname       = "worker-1"
     addresses      = ["192.168.131.13"]
-    mac            = "bb:cc:dd:ee:aa:13"
+    mac            = "aa:bb:cc:dd:00:13"
     wait_for_lease = true
   }
   console {

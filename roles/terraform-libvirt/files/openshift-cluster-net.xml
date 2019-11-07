@@ -5,7 +5,8 @@
       <port start='1024' end='65535'/>
     </nat>
   </forward>
-  <mac address='bb:cc:dd:ee:aa:00'/>
+  <bridge name='virbr-ocpcls' stp='on' delay='0'/>
+  <mac address='aa:bb:cc:dd:ee:01'/>
   <domain name='essi.labs' localOnly='no'/>
   <dns>
 	  <forwarder addr="192.168.130.10"/>
@@ -14,11 +15,11 @@
     <dhcp>
       <range start='192.168.131.10' end='192.168.131.254'/>
       <bootp file="pxelinux.0" server="192.168.131.20"/>
-      <host mac='bb:cc:dd:ee:aa:10' name='loadbalancer.essi.labs' ip='192.168.131.10'/>
-      <host mac='bb:cc:dd:ee:aa:20' name='www.essi.labs' ip='192.168.131.20'/>
-      <host mac='bb:cc:dd:ee:aa:11' name='bootstrap.essi.labs' ip='192.168.131.11'/>
-      <host mac='bb:cc:dd:ee:aa:12' name='master.essi.labs' ip='192.168.131.12'/>
-      <host mac='bb:cc:dd:ee:aa:13' name='worker-1.essi.labs' ip='192.168.131.13'/>
+      <host mac='aa:bb:cc:dd:00:10' name='loadbalancer.essi.labs' ip='192.168.131.10'/>
+      <host mac='aa:bb:cc:dd:00:20' name='www.essi.labs' ip='192.168.131.20'/>
+      <host mac='aa:bb:cc:dd:00:11' name='bootstrap.essi.labs' ip='192.168.131.11'/>
+      <host mac='aa:bb:cc:dd:00:12' name='master.essi.labs' ip='192.168.131.12'/>
+      <host mac='aa:bb:cc:dd:00:13' name='worker-1.essi.labs' ip='192.168.131.13'/>
     </dhcp>
   </ip>
 </network>
