@@ -13,8 +13,11 @@
 
 - name: copy config data
   template:
-    src: cloud_init.cfg.j2
-    dest: "{{ terraform_dir }}/cloud_init.cfg"
+    src: "{{ item }}.j2"
+    dest: "{{ terraform_dir }}/{{ item }}"
+  loop:
+    - ocp-lab-vars.tf
+    - cloud_init.cfg
 
 
 - name: deploy terraform
