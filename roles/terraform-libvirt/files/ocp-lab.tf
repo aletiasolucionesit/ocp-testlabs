@@ -8,7 +8,7 @@ provider "libvirt" {
 
 resource "libvirt_volume" "os_image" {
   name = "os_image"
-  source = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1907.qcow2"
+  source = "${var.image_id}"
 }
 
 resource "libvirt_volume" "ocp-bastion-qcow2" {
