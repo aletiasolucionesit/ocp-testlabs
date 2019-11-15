@@ -1,3 +1,31 @@
+- name: search files
+  find:
+    paths: /var/lib/libvirt/images
+    recurse: no
+    patterns: '*.qcow2'
+  register: images
+  become: true
+
+- name: set image_found
+  set_fact:
+    image_found: true
+  when: (qcow2_image|basename == item.path|basename) or ('http' in qcow2_image)
+  loop: "{{ images.files }}"
+
+- name: download image
+  get_url:
+    url: "{{ qcow2_image }}"
+    dest: /var/lib/libvirt/images
+  when: "'http' in qcow2_image and not image_found"
+  become: true
+
+- name: image does not exists
+  assert:
+    fail_msg: "The image {{ qcow2_image|basename }} is not in libvirt pool"
+    success_msg: "The image {{ qcow2_image|basename }} is  in libvirt pool"
+    that: 
+      - image_found 
+
 - name: create terraform directory
   file:
     path: "{{ terraform_dir }}"

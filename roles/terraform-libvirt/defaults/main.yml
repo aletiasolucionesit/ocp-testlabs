@@ -12,3 +12,4 @@ libvirt_packages:
   - virt-manager
 terraform_dir: "~/ocp-terraform"
 qcow2_image: "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1907.qcow2"
+image_found: false
