@@ -1,6 +1,5 @@
 ---
 # defaults file for terraform-libvirt
-  - libvirt-devel
 root_pass: redhat
 libvirt_packages:
   - libvirt-devel
