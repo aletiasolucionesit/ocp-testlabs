@@ -60,7 +60,7 @@ resource "libvirt_domain" "ocp-master" {
     network_name = "ocp-net"
     hostname       = "ocp-master-${count.index+1}"
     addresses      = ["10.10.10.1${count.index+1}"]
-    mac            = "AA:BB:CC:11:22:1${count.index}"
+    mac            = "AA:BB:CC:11:22:1${count.index+1}"
     wait_for_lease = true
   }
   console {
