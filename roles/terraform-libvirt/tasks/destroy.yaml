@@ -1,0 +1,9 @@
+- name: destroy terraform
+  terraform:
+    project_path: "{{ terraform_dir }}"
+    state: "absent"
+
+- name: delete terraform directory
+  file:
+    path: "{{ terraform_dir }}"
+    state: absent

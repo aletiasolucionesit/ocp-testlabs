@@ -7,7 +7,7 @@ provider "libvirt" {
 # We fetch the latest ubuntu release image from their mirrors
 
 resource "libvirt_volume" "os_image" {
-  name = "os_image"
+  name = "${var.base_image}"
   source = "${var.image_id}"
 }
 
@@ -17,13 +17,13 @@ resource "libvirt_volume" "ocp-bastion-qcow2" {
 }
 
 resource "libvirt_volume" "ocp-master-qcow2" {
-  name = "ocp-master-qcow2-${count.index}"
+  name = "ocp-master-qcow2-${count.index+1}"
   base_volume_id = "${libvirt_volume.os_image.id}"
   count = 3
 }
 
 resource "libvirt_volume" "ocp-node-qcow2" {
-  name = "ocp-node-qcow2-${count.index}"
+  name = "ocp-node-qcow2-${count.index+1}"
   base_volume_id = "${libvirt_volume.os_image.id}"
   count = 4
 }
