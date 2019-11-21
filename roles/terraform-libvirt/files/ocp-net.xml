@@ -10,7 +10,7 @@
   <domain name='ocp-net'/>
   <ip address='10.10.10.1' netmask='255.255.255.0'>
     <dhcp>
-      <range start='10.10.10.40' end='10.10.10.45'/>
+      <range start='10.10.10.40' end='10.10.10.245'/>
       <host mac='AA:BB:CC:11:22:10' name='ocp-bastion' ip='10.10.10.10'/>
       <host mac='AA:BB:CC:11:22:11' name='ocp-master-1' ip='10.10.10.11'/>
       <host mac='AA:BB:CC:11:22:12' name='ocp-master-2' ip='10.10.10.12'/>

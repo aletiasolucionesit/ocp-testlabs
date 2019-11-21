@@ -52,7 +52,7 @@ resource "libvirt_domain" "ocp-master" {
   count = 3
   name   = "ocp-master-${count.index+1}"
   memory = "2048"
-  vcpu   = 1
+  vcpu   = 2
 
   cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
 
