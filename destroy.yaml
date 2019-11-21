@@ -38,7 +38,7 @@
       ping:
 
 - name: Unsubscribe systems
-  hosts: "*.essi.labs"
+  hosts: "10.10.10.*"
   gather_facts: true
   remote_user: root
   tasks:
