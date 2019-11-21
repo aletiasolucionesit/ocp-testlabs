@@ -1,6 +1,5 @@
 <network>
   <name>ocp-net</name>
-  <uuid>5571b9ff-2d86-438e-8d42-08c1df56f536</uuid>
   <forward mode='nat'>
     <nat>
       <port start='1024' end='65535'/>

@@ -20,3 +20,4 @@
   virt_net:
     state: active
     name: ocp-net
+    autostart: true
