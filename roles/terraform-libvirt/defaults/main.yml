@@ -16,3 +16,4 @@ libvirt_packages:
 terraform_dir: "~/ocp-terraform"
 qcow2_image: "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1907.qcow2"
 base_image: "os_image"
+network_name: ocp-net

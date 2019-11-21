@@ -14,7 +14,7 @@
   virt_net:
     command: define
     name: ocp-net
-    xml: '{{ lookup("file", "files/ocp-net.xml") }}'
+    xml: '{{ lookup("template", "templates/ocp-net.xml.j2") }}'
 
 - name: start ocp-net
   virt_net:
