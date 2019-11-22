@@ -1,0 +1,49 @@
+- name: get virtual machines
+  virt:
+    command: list_vms
+  register: machines
+  become: true
+
+- name: Add host to play
+  add_host:
+    hostname: "{{ item }}.{{ network_name }}"
+    ansible_host: 10.10.10.1{{ ip_index }}
+    group: "demo"
+  loop: "{{ machines['list_vms']|select('match','ocp-(bastion|master).*')|list }}"
+  loop_control:
+    index_var: ip_index
+
+- name: Add host to play
+  add_host:
+    hostname: "{{ item }}.{{ network_name }}"
+    ansible_host: 10.10.10.2{{ ip_index+1 }}
+    group: "demo"
+  loop: "{{ machines['list_vms']|select('match','ocp-node.*')|list }}"
+  loop_control:
+    index_var: ip_index
+
+- name: disable hostname in NM
+  shell: |
+    "/usr/bin/nmcli connection add con-name eth0 type ethernet ifname eth0"
+  when: inventory_hostname in groups['demo']
+
+- name: disable hostname in NM
+  shell: |
+    "/usr/bin/nmcli connection modify eth0 ipv4.dhcp-send-hostname false"
+  when: inventory_hostname in groups['demo']
+
+- name: disable hostname in NM
+  shell: |
+    "/usr/bin/nmcli connection up eth0"
+  when: inventory_hostname in groups['demo']
+
+- name: set fqdn
+  shell: "hostnamectl set-hostname {{ inventory_hostname }}"
+  when: inventory_hostname in groups['demo']
+
+- name: set hostname
+  copy:
+    dest: /etc/hostname
+    content: "{{ inventory_hostname }}"
+  become: true
+  when: inventory_hostname in groups['demo']

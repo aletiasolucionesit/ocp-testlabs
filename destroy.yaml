@@ -12,15 +12,12 @@
         command: list_vms
       register: machines
       become: true
-    - name: debug
-      debug:
-        var: machines['list_vms']|select('match','ocp-master.*')|list
 
     - name: Add host to play
       add_host:
         hostname: "{{ item }}"
         ansible_host: 10.10.10.1{{ ip_index }}
-      loop: "{{ machines['list_vms']|select('match','ocp-(bastion|master).*')|list }}"
+      loop: "{{ machines['list_vms']|select('match','ocp-(bastion|master).*')|list|sort }}"
       loop_control:
         index_var: ip_index
 
@@ -28,7 +25,7 @@
       add_host:
         hostname: "{{ item }}"
         ansible_host: 10.10.10.2{{ ip_index+1 }}
-      loop: "{{ machines['list_vms']|select('match','ocp-node.*')|list }}"
+      loop: "{{ machines['list_vms']|select('match','ocp-node.*')|list|sort }}"
       loop_control:
         index_var: ip_index
 
@@ -38,7 +35,7 @@
       ping:
 
 - name: Unsubscribe systems
-  hosts: "10.10.10.*"
+  hosts: ocp-*
   gather_facts: true
   remote_user: root
   tasks:
