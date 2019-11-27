@@ -1,4 +1,4 @@
-variable "image_id" {
+variable "qcow2_image" {
   type = "string"
   default = "{{ qcow2_image }}"
 }
@@ -7,3 +7,48 @@ variable "base_image" {
   type = "string"
   default = "{{ base_image }}"
 }
+
+variable "master_count" {
+  type = "string"
+{% if multi_master %}
+  default = 3
+{% else %}
+  default = 1
+{% endif %}
+}
+
+variable "master_cpu" {
+  type = "string"
+  default = "{{ master_cpu }}"
+}
+
+variable "master_memory" {
+  type = "string"
+  default = "{{ master_memory }}"
+}
+
+variable "master_docker_device" {
+  type = "string"
+  default = "{{ master_docker_device }}"
+}
+
+variable "nodes_cpu" {
+  type = "string"
+  default = "{{ nodes_cpu }}"
+}
+
+variable "nodes_memory" {
+  type = "string"
+  default = "{{ nodes_memory }}"
+}
+
+variable "nodes_count" {
+  type = "string"
+  default = "{{ nodes_count }}"
+}
+
+variable "nodes_docker_device" {
+  type = "string"
+  default = "{{ nodes_docker_device }}"
+}
+
