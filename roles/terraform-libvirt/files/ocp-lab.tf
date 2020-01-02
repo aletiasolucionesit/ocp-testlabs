@@ -8,7 +8,7 @@ provider "libvirt" {
 
 resource "libvirt_volume" "os_image" {
   name = "${var.base_image}"
-  source = "${var.image_id}"
+  source = "${var.qcow2_image}"
 }
 
 resource "libvirt_volume" "ocp-bastion-qcow2" {
@@ -19,13 +19,23 @@ resource "libvirt_volume" "ocp-bastion-qcow2" {
 resource "libvirt_volume" "ocp-master-qcow2" {
   name = "ocp-master-qcow2-${count.index+1}"
   base_volume_id = "${libvirt_volume.os_image.id}"
-  count = 3
+  count = "${var.master_count}"
+}
+resource "libvirt_volume" "ocp-master-docker-qcow2" {
+  name = "ocp-master-docker-qcow2-${count.index+1}"
+  size = "${var.master_docker_device}"
+  count = "${var.master_count}"
 }
 
 resource "libvirt_volume" "ocp-node-qcow2" {
   name = "ocp-node-qcow2-${count.index+1}"
   base_volume_id = "${libvirt_volume.os_image.id}"
-  count = 4
+  count = "${var.nodes_count}"
+}
+resource "libvirt_volume" "ocp-node-docker-qcow2" {
+  name = "ocp-node-docker-qcow2-${count.index+1}"
+  size = "${var.nodes_docker_device}"
+  count = "${var.nodes_count}"
 }
 
 data "template_file" "user_data" {
@@ -49,10 +59,15 @@ resource "libvirt_cloudinit_disk" "commoninit" {
 
 # Create the machines
 resource "libvirt_domain" "ocp-master" {
-  count = 3
+  count = "${var.master_count}"
   name   = "ocp-master-${count.index+1}"
-  memory = "2048"
-  vcpu   = 2
+  memory = "${var.master_memory}"
+  vcpu   = "${var.master_cpu}"
+
+  cpu = {
+    mode = "host-passthrough"
+  }
+
 
   cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
   cpu = {
@@ -62,45 +77,6 @@ resource "libvirt_domain" "ocp-master" {
   network_interface {
     network_name = "ocp-net"
     hostname       = "ocp-master-${count.index+1}"
-    addresses      = ["10.10.10.1${count.index+1}"]
-    mac            = "AA:BB:CC:11:22:1${count.index+1}"
-    wait_for_lease = true
-  }
-  console {
-    type        = "pty"
-    target_port = "0"
-    target_type = "serial"
-  }
-  console {
-    type        = "pty"
-    target_type = "virtio"
-    target_port = "1"
-  }
-  disk {
-    volume_id = "${libvirt_volume.ocp-master-qcow2.*.id[count.index]}"
-  }
-
-  graphics {
-    type        = "spice"
-    listen_type = "address"
-    autoport    = true
-  }
-}
-
-resource "libvirt_domain" "ocp-node" {
-  count = 4
-  name   = "ocp-node-${count.index+1}"
-  memory = "4096"
-  vcpu   = 2
-
-  cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
-  cpu = {
-    mode = "host-passthrough"
-  }
-
-  network_interface {
-    network_name = "ocp-net"
-    hostname       = "ocp-node-${count.index+1}"
     addresses      = ["10.10.10.2${count.index+1}"]
     mac            = "AA:BB:CC:11:22:2${count.index+1}"
     wait_for_lease = true
@@ -116,7 +92,56 @@ resource "libvirt_domain" "ocp-node" {
     target_port = "1"
   }
   disk {
+    volume_id = "${libvirt_volume.ocp-master-qcow2.*.id[count.index]}"
+  }
+  disk {
+    volume_id = "${libvirt_volume.ocp-master-docker-qcow2.*.id[count.index]}"
+  }
+
+  graphics {
+    type        = "spice"
+    listen_type = "address"
+    autoport    = true
+  }
+}
+
+resource "libvirt_domain" "ocp-node" {
+  count = "${var.nodes_count}"
+  name   = "ocp-node-${count.index+1}"
+  memory = "${var.nodes_memory}"
+  vcpu   = "${var.nodes_cpu}"
+
+  cpu = {
+    mode = "host-passthrough"
+  }
+
+  cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
+  cpu = {
+    mode = "host-passthrough"
+  }
+
+  network_interface {
+    network_name = "ocp-net"
+    hostname       = "ocp-node-${count.index+1}"
+    addresses      = ["10.10.10.4${count.index+1}"]
+    mac            = "AA:BB:CC:11:22:4${count.index+1}"
+    wait_for_lease = true
+  }
+  console {
+    type        = "pty"
+    target_port = "0"
+    target_type = "serial"
+  }
+  console {
+    type        = "pty"
+    target_type = "virtio"
+    target_port = "1"
+  }
+  disk {
     volume_id = "${libvirt_volume.ocp-node-qcow2.*.id[count.index]}"
+  }
+  disk {
+    volume_id = "${libvirt_volume.ocp-node-docker-qcow2.*.id[count.index]}"
   }
 
   graphics {

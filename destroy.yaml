@@ -1,6 +1,8 @@
 - name: Prepare KVM Virtual machines
   hosts: localhost
   gather_facts: false
+  vars_files:
+    - roles/terraform-libvirt/defaults/main.yml
   pre_tasks:
     - name: check if sudo is passwordless
       debug:
@@ -13,18 +15,23 @@
       register: machines
       become: true
 
-    - name: Add host to play
+    - name: Add bastion to play
       add_host:
-        hostname: "{{ item }}"
-        ansible_host: 10.10.10.1{{ ip_index }}
-      loop: "{{ machines['list_vms']|select('match','ocp-(bastion|master).*')|list|sort }}"
-      loop_control:
-        index_var: ip_index
+        hostname: "ocp-bastion"
+        ansible_host: 10.10.10.10
 
-    - name: Add host to play
+    - name: Add masters to play
       add_host:
         hostname: "{{ item }}"
         ansible_host: 10.10.10.2{{ ip_index+1 }}
+      loop: "{{ machines['list_vms']|select('match','ocp-master.*')|list|sort }}"
+      loop_control:
+        index_var: ip_index
+
+    - name: Add nodes to play
+      add_host:
+        hostname: "{{ item }}"
+        ansible_host: 10.10.10.4{{ ip_index+1 }}
       loop: "{{ machines['list_vms']|select('match','ocp-node.*')|list|sort }}"
       loop_control:
         index_var: ip_index
@@ -39,7 +46,7 @@
   gather_facts: true
   remote_user: root
   tasks:
-    - name: Unsibscribe
+    - name: Unsubscribe
       redhat_subscription:
         state: absent
       when: ansible_distribution == "RedHat"
@@ -52,3 +59,10 @@
       import_role:
         name: terraform-libvirt
         tasks_from: destroy
+    - name: Destroy ocp-network
+      virt_net:
+        command: "{{ item }}"
+        name: "{{ network_name }}"
+      loop:
+        - destroy
+        - undefine

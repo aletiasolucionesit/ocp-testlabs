@@ -5,6 +5,10 @@
       debug:
         msg: "It is ok"
       become: true
+    - name: set master_count
+      set_fact:
+        master_count: "{% if multi_master %} 3 {% else %} 1 {% endif %}"
+
   roles:
     - terraform-libvirt
 
@@ -15,71 +19,65 @@
             command: list_vms
           register: machines
           become: true
-
-        - name: Add host to play
+        
+        - name: Add bastion to play
           add_host:
-            hostname: "{{ item }}.{{ network_name }}"
-            ansible_host: 10.10.10.1{{ ip_index }}
-            group: "demo"
-          loop: "{{ machines['list_vms']|select('match','ocp-(bastion|master).*')|list|sort }}"
-          loop_control:
-            index_var: ip_index
+            hostname: ocp-bastion.{{ network_name }}
+            ansible_host: 10.10.10.10
+            group: demo
 
-        - name: Add host to play
+        - name: Add masters to play
           add_host:
             hostname: "{{ item }}.{{ network_name }}"
             ansible_host: 10.10.10.2{{ ip_index+1 }}
             group: "demo"
+          loop: "{{ machines['list_vms']|select('match','ocp-master.*')|list|sort }}"
+          loop_control:
+            index_var: ip_index
+
+        - name: Add nodes to play
+          add_host:
+            hostname: "{{ item }}.{{ network_name }}"
+            ansible_host: 10.10.10.4{{ ip_index+1 }}
+            group: "demo"
           loop: "{{ machines['list_vms']|select('match','ocp-node.*')|list|sort }}"
           loop_control:
             index_var: ip_index
-      when: ssh_key_path is defined
 
 - name: Configure FQDN 
-  hosts: demo
+  hosts: demo 
   tasks:
-    - block:
-        - name: Install NetworkManager
-          yum:
-            name: NetworkManager
-            state: latest
-          when: ansible_distribution == "Centos"
+    - name: install nmcli
+      yum:
+        name: NetworkManager
+        state: latest
+      when: ansible_distribution != "RedHat"
 
-        - name: Start and enable NetworkManager
-          systemd:
-            name: NetworkManager
-            enabled: true
-            state: started
-          when: ansible_distribution == "Centos"
+    - name: start and enable NM
+      systemd:
+        state: started
+        enabled: true
+        name: NetworkManager
 
-        - name: disable hostname in NM
-          shell: "/usr/bin/nmcli connection add con-name eth0 type ethernet ifname eth0"
-          when: inventory_hostname in groups['demo']
+    - name: disable hostname in NM
+      shell: "/usr/bin/nmcli connection add con-name eth0 type ethernet ifname eth0"
+      when: inventory_hostname in groups['demo']
 
-        - name: disable hostname in NM
-          shell: "/usr/bin/nmcli connection modify eth0 ipv4.dhcp-send-hostname false"
-          when: inventory_hostname in groups['demo']
+    - name: disable hostname in NM
+      shell: "/usr/bin/nmcli connection modify eth0 ipv4.dhcp-send-hostname false"
+      when: inventory_hostname in groups['demo']
 
-        - name: disable hostname in NM
-          shell: "/usr/bin/nmcli connection up eth0"
-          when: inventory_hostname in groups['demo']
+    - name: disable hostname in NM
+      shell: "/usr/bin/nmcli connection up eth0"
+      when: inventory_hostname in groups['demo']
 
-        - name: set fqdn
-          shell: "hostnamectl set-hostname {{ inventory_hostname }}"
-          when: inventory_hostname in groups['demo']
+    - name: set fqdn
+      shell: "hostnamectl set-hostname {{ inventory_hostname }}"
+      when: inventory_hostname in groups['demo']
 
-        - name: set hostname
-          copy:
-            dest: /etc/hostname
-            content: "{{ inventory_hostname }}"
-          become: true
-          when: inventory_hostname in groups['demo']
-      when: ssh_key_path is defined
-
-    - name: FQDN NOT configured
-      debug:
-        msg: |
-          "Your sistems has not been configured with FQDN.
-          You should run 'hostnamectl set-hostname <fqdn-hostname>' on each machine"
-      when: ssh_key_path is not defined
-
+    - name: set hostname
+      copy:
+        dest: /etc/hostname
+        content: "{{ inventory_hostname }}"
+      become: true
+      when: inventory_hostname in groups['demo']

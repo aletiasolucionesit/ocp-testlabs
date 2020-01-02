@@ -17,9 +17,7 @@ chpasswd:
   list: |
      root:{{ root_pass }}
   expire: False
-{% if ssh_key_path is defined %}
 users:
   - name: root
     ssh-authorized-keys:
       -  {{ lookup('file', ssh_key_path) }}
-{% endif %}

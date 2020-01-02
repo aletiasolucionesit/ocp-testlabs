@@ -17,3 +17,11 @@ terraform_dir: "~/ocp-terraform"
 qcow2_image: "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1907.qcow2"
 base_image: "os_image"
 network_name: ocp-net
+multi_master: false
+master_cpu: 2
+master_memory: 4096
+master_docker_device: 10737418240
+nodes_cpu: 2
+nodes_memory: 2048
+nodes_count: 4
+nodes_docker_device: 10737418240
