@@ -55,6 +55,9 @@ resource "libvirt_domain" "ocp-master" {
   vcpu   = 2
 
   cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
+  cpu = {
+    mode = "host-passthrough"
+  }
 
   network_interface {
     network_name = "ocp-net"
@@ -91,6 +94,9 @@ resource "libvirt_domain" "ocp-node" {
   vcpu   = 2
 
   cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
+  cpu = {
+    mode = "host-passthrough"
+  }
 
   network_interface {
     network_name = "ocp-net"

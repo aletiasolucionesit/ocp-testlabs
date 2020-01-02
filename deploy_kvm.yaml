@@ -39,6 +39,19 @@
   hosts: demo
   tasks:
     - block:
+        - name: Install NetworkManager
+          yum:
+            name: NetworkManager
+            state: latest
+          when: ansible_distribution == "Centos"
+
+        - name: Start and enable NetworkManager
+          systemd:
+            name: NetworkManager
+            enabled: true
+            state: started
+          when: ansible_distribution == "Centos"
+
         - name: disable hostname in NM
           shell: "/usr/bin/nmcli connection add con-name eth0 type ethernet ifname eth0"
           when: inventory_hostname in groups['demo']

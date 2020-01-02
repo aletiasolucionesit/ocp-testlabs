@@ -1,0 +1,159 @@
+#### NODE LIST ####
+[masters]
+ocp-master-[1:3].ocp-net
+
+[etcd]
+ocp-master-[1:3].ocp-net
+
+[nodes]
+ocp-master-[1:3].ocp-net openshift_node_group_name="node-config-master"
+ocp-node-[1:4].ocp-net openshift_node_group_name="node-config-compute"
+
+# [glusterfs]
+# ocp-node-[1:4].ocp-net glusterfs_devices='[ "/dev/vdc" ]'
+
+[lb]
+ocp-bastion.ocp-net
+
+[OSEv3:children]
+masters
+nodes
+etcd
+lb
+# glusterfs
+
+[OSEv3:vars]
+openshift_disable_check=memory_availability,disk_availability
+#### ANSIBLE USER CONFIGURATION ####
+# ansible_user=ansible
+# ansible_become=yes
+
+#### OPENSHIFT VARIABLES ####
+# OpenShift deployment type and version
+openshift_deployment_type=openshift-enterprise
+openshift_release="3.11"
+
+# Red Hat Registry Service Account Token
+oreg_auth_user=4457344|ocp-net-kvm
+oreg_auth_password='eyJhbGciOiJSUzUxMiJ9.eyJzdWIiOiJhZThkYWRhZjY0YzQ0ZjhhODRmMzE1YjgzMzQ4NTgzZCJ9.D_g_T3FkHAz1yZz5SzF_akQ5qEh5lnoMRnhVHJGD3wa3Q6Ju3HPOm9h6yFg5qGQmzlBsZpmAViNQPWbZxGp-6CBdd3oLwAWiLMQyl9r8Dr-AuwZ6Ar8G_SovSE5HPL60b8ykAka5OveDGalLumuyRHKFyOxS_Zpx6D_soB1reyuCz2GiZ8B5dXZSCU-TAklnkx7AFHguJ_KMyOpciR-yo8lXj6JcZT1zmwpi2wKyZ2wJzEnuzmkg7DEVemK1DyMYba_xJldxsNKCsoo6z2tkQ7vXya1pKN3fqRVRYcR93GuZj1i0tQjGIoFvUY2pVR4f75Wpek_6uynlU1dcm8HeRTIYpkZP-gAtVOlWxd19OnpXWDfictku_gAbkC5iROuI2s6ZJ8Cl9GleRGD8s4t-4od3PT53-zb5T9KOLwGP2_qdzA6ji-Y7374RaSwHrRJQIy7BDdi4RXROFSEOI1Yg-_HBwZmFcyphH4U-MRKvquOX4zOcYjTbde-eMLjY6ymJtPzC6w_bcRqsyg3TjlrMCJPt1KIIXfSaQZ-5cRg2VOa8vm4A1-z5T3JLvBbiGudIpMZzsvj2qTHuMGy5_o-KkfYN6e4nM03OoBVGUiFkLFz2HUOwpBTlVrvAFjJqzSu8NVeSbarQw58hgFvHboVfDlwKCYZuhzbypIEOs0z7XPA'
+
+# Core Infrastructure Configuration
+openshift_master_api_port=8443
+openshift_master_console_port=8443
+openshift_master_cluster_hostname=api.ocp-net
+openshift_master_cluster_public_hostname=api.ocp-net
+openshift_master_default_subdomain=applications.ocp-net
+#openshift_master_external_ratelimit_qps=200
+#openshift_master_external_ratelimit_burst=400
+#openshift_master_loopback_ratelimit_qps=300
+#openshift_master_loopback_ratelimit_burst=600
+#openshift_master_max_requests_inflight=500
+#openshift_master_cluster_method=native
+#openshift_master_audit_config={"enabled": true, "auditFilePath": "/var/lib/origin/openshift-audit/openshift-audit.log", "maximumFileRetentionDays": "14", "maximumFileSizeMegabytes": "500", "maximumRetainedFiles": "5"}
+
+# Default selector Configuration
+osm_default_node_selector="node-role.kubernetes.io/compute=true"
+
+openshift_router_selector="node-role.kubernetes.io/compute=true"
+openshift_registry_selector="node-role.kubernetes.io/compute=true"
+openshift_hosted_infra_selector="node-role.kubernetes.io/compute=true"
+
+# Network Plugin Configuration
+os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
+
+# Certificates Configuration
+# Router
+#openshift_hosted_router_certificate={"certfile": "/home/ansible/aplicaciones.fnmt.es.cer", "keyfile": "/home/ansible/aplicaciones.fnmt.es.key", "cafile": "/home/ansible/fnmt_ca.crt"}
+
+# GLusterFS Configuration
+#openshift_storage_glusterfs_image='registry.access.redhat.com/rhgs3/rhgs-server-rhel7:v3.11'
+#openshift_storage_glusterfs_heketi_image='registry.access.redhat.com/rhgs3/rhgs-volmanager-rhel7:v3.11'
+#openshift_storage_glusterfs_block_image='registry.access.redhat.com/rhgs3/rhgs-gluster-block-prov-rhel7:v3.11'
+
+### OCS for OpenShift infrastructure ###
+#openshift_storage_glusterfs_registry_namespace=infra-storage
+#openshift_storage_glusterfs_registry_storageclass=true
+#openshift_storage_glusterfs_registry_storageclass_default=false
+#openshift_storage_glusterfs_registry_block_deploy=true
+#openshift_storage_glusterfs_registry_block_host_vol_create=true
+#openshift_storage_glusterfs_registry_block_host_vol_size=100
+#openshift_storage_glusterfs_registry_block_storageclass=true
+#openshift_storage_glusterfs_registry_block_storageclass_default=false
+
+### OCS for OpenShift Applications ###
+#openshift_storage_glusterfs_namespace=app-storage
+#openshift_storage_glusterfs_storageclass=true
+#openshift_storage_glusterfs_storageclass_default=true
+#openshift_storage_glusterfs_block_deploy=true
+#openshift_storage_glusterfs_block_host_vol_create=true
+#openshift_storage_glusterfs_block_host_vol_size=200
+
+# Registry Storage Configuration
+#openshift_hosted_registry_storage_kind=glusterfs
+#openshift_hosted_registry_storage_volume_size=100Gi
+
+# Metrics and Monitoring Configuration
+openshift_metrics_server_install=true
+openshift_cluster_monitoring_operator_install=false
+#openshift_cluster_monitoring_operator_node_selector={"node-role.kubernetes.io/infra": "true"}
+#openshift_cluster_monitoring_operator_prometheus_storage_enabled=true
+#openshift_cluster_monitoring_operator_alertmanager_storage_enabled=true
+#openshift_cluster_monitoring_operator_prometheus_storage_capacity=30Gi
+#openshift_cluster_monitoring_operator_alertmanager_storage_capacity=3Gi
+#openshift_cluster_monitoring_operator_prometheus_storage_class_name=glusterfs-registry
+#openshift_cluster_monitoring_operator_alertmanager_storage_class_name=glusterfs-registry
+
+# Logging Configuration
+openshift_logging_install_logging=false
+#openshift_logging_master_url=https://api.ocp-net
+#openshift_logging_master_public_url=https://api.ocp-net
+#openshift_logging_curator_memory_limit=3Gi
+#openshift_logging_kibana_memory_limit=6Gi
+#openshift_logging_kibana_proxy_memory_limit=6Gi
+#openshift_logging_fluentd_memory_limit=6Gi
+#openshift_logging_es_memory_limit=6Gi
+#openshift_logging_kibana_nodeselector={"node-role.kubernetes.io/infra": "true"}
+#openshift_logging_curator_nodeselector={"node-role.kubernetes.io/infra": "true"}
+#openshift_logging_es_nodeselector={"node-role.kubernetes.io/infra": "true"}
+#openshift_logging_es_pvc_size=100Gi
+#openshift_logging_es_pvc_storage_class_name="glusterfs-registry-block"
+#openshift_logging_elasticsearch_storage_type=pvc
+#openshift_logging_es_number_of_replicas=2
+#openshift_logging_es_cluster_size=3
+
+# Authentication Configuration
+
+# LDAP auth
+openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider'}]
+
+# openssl passwd -apr1 
+openshift_master_htpasswd_users={'admin':'$apr1$9ATl46vO$22gZzbUm8f8L4OX2/kkn9/'}
+
+# Override the default oauth tokenConfig settings:
+openshift_master_access_token_max_seconds=86400
+openshift_master_auth_token_max_seconds=500
+
+# Group Definitions Configuration
+openshift_node_groups=[{'name': 'node-config-master', 'labels': ['node-role.kubernetes.io/master=true','region=masters','zone=default']}, {'name': 'node-config-infra', 'labels': ['node-role.kubernetes.io/infra=true', 'region=infra','zone=default','builds=true']}, {'name': 'node-config-compute', 'labels': ['node-role.kubernetes.io/compute=true','region=apps']},{'name': 'node-config-storage', 'labels': ['node-role.kubernetes.io/storage=true','region=storage']}]
+
+
+# Miscellaneous Configuration
+# Enable service catalog
+#openshift_enable_service_catalog=true
+
+# Enable template service broker (requires service catalog to be enabled, above)
+#template_service_broker_install=true
+
+# Manage openshift example imagestreams and templates during install and upgrade
+openshift_install_examples=true
+
+# Manage builds location
+#openshift_buildoverrides_nodeselectors={'builds':'true'}
+
+# Technology Preview Operators Configuration
+#openshift_additional_registry_credentials=[]
+
+
+
+
+
