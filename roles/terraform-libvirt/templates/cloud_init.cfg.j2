@@ -21,3 +21,5 @@ users:
   - name: root
     ssh-authorized-keys:
       -  {{ lookup('file', ssh_key_path) }}
+bootcmd:
+  - echo "UseDNS no" >> /etc/ssh/sshd_config

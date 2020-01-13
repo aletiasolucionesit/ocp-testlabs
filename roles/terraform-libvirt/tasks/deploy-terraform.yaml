@@ -9,7 +9,7 @@
 - name: set image_found
   set_fact:
     image_found: true
-  when: (qcow2_image|basename == item.path|basename) or ('http' in qcow2_image)
+  when: (qcow2_image|basename == item.path|basename) #or ('http' in qcow2_image)
   loop: "{{ images.files }}"
 
 - name: download image
@@ -18,6 +18,13 @@
     dest: /var/lib/libvirt/images
   when: "'http' in qcow2_image and not image_found"
   become: true
+  register: downloaded
+
+- name: set image_found
+  set_fact:
+    image_found: true
+  when: downloaded.changed
+
 
 - name: image does not exists
   assert:
