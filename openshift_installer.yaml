@@ -2,11 +2,15 @@
   hosts: www.essi.labs
   gather_facts: false
   remote_user: root
+  vars_files:
+    - vars/default.yaml
+  vars:
+    ocp_release: "4.2"
 
   tasks:
     - name: get release
       uri:
-        url: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest-4.1/release.txt"
+        url: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest-{{ ocp_release }}/release.txt"
         return_content: true
       register: release
 
@@ -21,13 +25,13 @@
 
     - name: Download installer
       unarchive:
-        src: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest-4.1/openshift-install-linux-{{ version }}.tar.gz"
+        src: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest-{{ ocp_release }}/openshift-install-linux-{{ version }}.tar.gz"
         dest: "{{ ocp_install_dir }}"
         remote_src: true
 
     - name: Download openshift-client
       unarchive:
-        src: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest-4.1/openshift-client-linux-{{ version }}.tar.gz"
+        src: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest-{{ ocp_release }}/openshift-client-linux-{{ version }}.tar.gz"
         dest: /usr/local/bin/
         remote_src: true
 

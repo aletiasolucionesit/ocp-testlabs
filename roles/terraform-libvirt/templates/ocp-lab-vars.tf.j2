@@ -3,3 +3,27 @@ variable "image_id" {
   default = "{{ qcow2_image }}"
 }
 
+variable "master_count" {
+  type = "string"
+  default = "{{ master_count }}"
+}
+
+variable "master_disk" {
+  type = "string"
+  default = "{{ master_disk|human_to_bytes }}"
+}
+variable "bootstrap_disk" {
+  type = "string"
+  default = "{{ master_disk|human_to_bytes }}"
+}
+
+variable "worker_count" {
+  type = "string"
+  default = "{{ worker_count }}"
+}
+
+variable "worker_disk" {
+  type = "string"
+  default = "{{ worker_disk|human_to_bytes }}"
+}
+

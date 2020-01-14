@@ -1,6 +1,8 @@
 - name: Deploy LoadBlancer machine
   hosts: loadbalancer.essi.labs
   remote_user: root
+  vars_files:
+    - vars/default.yaml
   vars:
     ports:
       - 80
@@ -27,7 +29,7 @@
         - firewalld
 
     - name: Create HAProxy config file
-      copy:
+      template:
         dest: /etc/haproxy/haproxy.cfg
         src: files/haproxy.cfg 
         mode: 0644

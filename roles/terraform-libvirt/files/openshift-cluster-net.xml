@@ -18,9 +18,12 @@
       <host mac='aa:bb:cc:dd:00:10' name='loadbalancer.essi.labs' ip='192.168.131.10'/>
       <host mac='aa:bb:cc:dd:00:20' name='www.essi.labs' ip='192.168.131.20'/>
       <host mac='aa:bb:cc:dd:00:11' name='bootstrap.essi.labs' ip='192.168.131.11'/>
-      <host mac='aa:bb:cc:dd:00:12' name='master.essi.labs' ip='192.168.131.12'/>
-      <host mac='aa:bb:cc:dd:00:13' name='worker-1.essi.labs' ip='192.168.131.13'/>
+{% for master in range(1,master_count|int+1) %}
+      <host mac='aa:bb:cc:dd:00:2{{ master }}' name='master-{{ master }}.essi.labs' ip='192.168.131.2{{ master }}'/>
+{% endfor %}
+{% for worker in range(1,worker_count|int+1) %}
+      <host mac='aa:bb:cc:dd:00:4{{ worker }}' name='worker-{{ worker }}.essi.labs' ip='192.168.131.4{{ worker }}'/>
+{% endfor %}
     </dhcp>
   </ip>
 </network>
-

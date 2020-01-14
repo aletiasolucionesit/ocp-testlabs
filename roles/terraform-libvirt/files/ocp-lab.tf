@@ -12,33 +12,35 @@ resource "libvirt_volume" "os_image" {
 }
 
 resource "libvirt_volume" "ocp-dns-qcow2" {
-  name = "ocp-dns-qcow2"
+  name = "ocp-dns.qcow2"
   base_volume_id = "${libvirt_volume.os_image.id}"
 }
 
 resource "libvirt_volume" "ocp-lb-qcow2" {
-  name = "ocp-lb-qcow2"
+  name = "ocp-lb.qcow2"
   base_volume_id = "${libvirt_volume.os_image.id}"
 }
 
 resource "libvirt_volume" "ocp-www-qcow2" {
-  name = "ocp-www-qcow2"
+  name = "ocp-www.qcow2"
   base_volume_id = "${libvirt_volume.os_image.id}"
 }
 
 resource "libvirt_volume" "ocp-bootstrap-qcow2" {
-  name = "ocp-bootstrap-qcow2"
-  size = "10737418240"
+  name = "ocp-bootstrap.qcow2"
+  size = "${var.bootstrap_disk}"
 }
 
 resource "libvirt_volume" "ocp-master-qcow2" {
-  name = "ocp-master-qcow2"
-  size = "10737418240"
+  name = "ocp-master-${count.index+1}.qcow2"
+  size = "${var.master_disk}"
+  count = "${var.master_count}"
 }
 
-resource "libvirt_volume" "ocp-worker-1-qcow2" {
-  name = "ocp-worker-1-qcow2"
-  size = "10737418240"
+resource "libvirt_volume" "ocp-worker-qcow2" {
+  name = "ocp-worker-${count.index+1}.qcow2"
+  size = "${var.worker_disk}"
+  count = "${var.worker_count}"
 }
 
 data "template_file" "user_data" {
@@ -208,7 +210,8 @@ resource "libvirt_domain" "ocp-bootstrap" {
 }
 
 resource "libvirt_domain" "ocp-master" {
-  name   = "ocp-master"
+  count = "${var.master_count}"
+  name   = "ocp-master-${count.index+1}"
   memory = "6144"
   vcpu   = 4
 
@@ -221,9 +224,9 @@ resource "libvirt_domain" "ocp-master" {
 
   network_interface {
     network_name = "openshift-cluster"
-    hostname       = "master"
-    addresses      = ["192.168.131.12"]
-    mac            = "aa:bb:cc:dd:00:12"
+    hostname       = "master-${count.index+1}"
+    addresses      = ["192.168.131.2${count.index+1}"]
+    mac            = "aa:bb:cc:dd:00:2${count.index+1}"
     wait_for_lease = true
   }
   console {
@@ -237,7 +240,7 @@ resource "libvirt_domain" "ocp-master" {
     target_port = "1"
   }
   disk {
-    volume_id = "${libvirt_volume.ocp-master-qcow2.id}"
+    volume_id = "${libvirt_volume.ocp-master-qcow2.*.id[count.index]}"
   }
 
   graphics {
@@ -247,8 +250,9 @@ resource "libvirt_domain" "ocp-master" {
   }
 }
 
-resource "libvirt_domain" "ocp-worker-1" {
-  name   = "ocp-worker-1"
+resource "libvirt_domain" "ocp-worker" {
+  count = "${var.worker_count}"
+  name   = "ocp-worker-${count.index+1}"
   memory = "6144"
   vcpu   = 4
 
@@ -261,9 +265,9 @@ resource "libvirt_domain" "ocp-worker-1" {
 
   network_interface {
     network_name = "openshift-cluster"
-    hostname       = "worker-1"
-    addresses      = ["192.168.131.13"]
-    mac            = "aa:bb:cc:dd:00:13"
+    hostname       = "worker-${count.index+1}"
+    addresses      = ["192.168.131.4${count.index+1}"]
+    mac            = "aa:bb:cc:dd:00:4${count.index+1}"
     wait_for_lease = true
   }
   console {
@@ -277,7 +281,7 @@ resource "libvirt_domain" "ocp-worker-1" {
     target_port = "1"
   }
   disk {
-    volume_id = "${libvirt_volume.ocp-worker-1-qcow2.id}"
+    volume_id = "${libvirt_volume.ocp-worker-qcow2.*.id[count.index]}"
   }
 
   graphics {

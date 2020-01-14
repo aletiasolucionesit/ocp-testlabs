@@ -19,7 +19,7 @@ controlPlane:
   hyperthreading: Enabled
   name: master
   platform: {}
-  replicas: 1
+  replicas: 3
 metadata:
   creationTimestamp: null
   name: essi
@@ -43,4 +43,4 @@ EOF
 
 6. Create the ignition files: `./openshift-install create ignition-configs`
 7. Copy ignition files to www machine inside **/var/www/html/ignition**
-8. Run the installer `./openshift-install --dir=<installation_directory> wait-for bootstrap-complete --log-level info`
+8. Run the installer `./openshift-install wait-for bootstrap-complete --log-level debug`

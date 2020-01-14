@@ -1,7 +1,8 @@
 - name: Deploy DNS machine
   hosts: dns.essi.labs
   remote_user: root
-
+  vars_files:
+    - vars/default.yaml
   tasks:
     - name: Register and subscribe
       redhat_subscription:
@@ -27,21 +28,32 @@
         content: |
           local=/essi.labs/
           address=/apps.essi.labs/192.168.131.10
-          srv-host=_etcd-server-ssl._tcp.essi.labs,master.essi.labs,2380,0,10
+          {% for master in range(1,master_count|int+1= %} 
+          srv-host=_etcd-server-ssl._tcp.essi.labs,master-{{ master }}.essi.labs,2380,0,10
+
+          {% endfor %}
           no-hosts
           addn-hosts=/etc/dnsmasq.openshift.addnhosts
           conf-dir=/etc/dnsmasq.d,.rpmnew,.rpmsave,.rpmorig
+    - name: get_hosts
+      xml: 
+        path: /var/run/libvirt/network/openshift-cluster.xml
+        xpath: /networkstatus/network/ip/dhcp/host
+        content: attribute
+      register: xml_net
+      delegate_to: localhost
+      become: yes
 
     - name: Configure dnsmasq OCP file
       copy:
         dest: /etc/dnsmasq.openshift.addnhosts
         content: |
           192.168.130.10 dns.essi.labs
-          192.168.131.10 loadbalancer.essi.labs  api.essi.labs  api-int.essi.labs
-          192.168.131.11 bootstrap.essi.labs
-          192.168.131.12 master.essi.labs  etcd-0.essi.labs
-          192.168.131.13 worker-1.essi.labs
-          192.168.131.20 www.essi.labs
+          {% set count = namespace(a=0) %}
+          {% for machine in xml_net['matches'] %}
+          {{ machine['host']['ip'] }} {{ machine['host']['name'] }}.essi.labs {{ machine['host']['name'] }} {% if 'master' in machine['host']['name'] %} etcd-{{ count.a }}.essi.labs etcd-{{ count.a }} {% set count.a = count.a +1 %}{% elif 'loadbalancer' in machine['host']['name'] %} api.essi.labs api-int.essi.labs {% endif %}
+
+          {% endfor %}
 
     - name: Start and enable {{ item }}
       systemd:

@@ -1,6 +1,10 @@
 - name: Deploy WWW machine
   hosts: www.essi.labs
   remote_user: root
+  vars_files:
+    - vars/default.yaml
+  vars:
+    ocp_release: "4.2"
 
   tasks:
     - name: Register and subscribe
@@ -42,10 +46,10 @@
         group: apache
         mode: 0644
       loop:
-        - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.1/4.1.0/rhcos-4.1.0-x86_64-installer-initramfs.img
-        - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.1/4.1.0/rhcos-4.1.0-x86_64-installer-kernel
-        - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.1/4.1.0/rhcos-4.1.0-x86_64-installer.iso
-        - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.1/4.1.0/rhcos-4.1.0-x86_64-metal-bios.raw.gz
+        - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/{{ ocp_release }}/{{ ocp_release }}.0/rhcos-{{ ocp_release }}.0-x86_64-installer-initramfs.img
+        - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/{{ ocp_release }}/{{ ocp_release }}.0/rhcos-{{ ocp_release }}.0-x86_64-installer-kernel
+        - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/{{ ocp_release }}/{{ ocp_release }}.0/rhcos-{{ ocp_release }}.0-x86_64-installer.iso
+        - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/{{ ocp_release }}/{{ ocp_release }}.0/rhcos-{{ ocp_release }}.0-x86_64-metal-bios.raw.gz
 
     - name: Create syslinux files
       copy:
@@ -63,23 +67,53 @@
         path: /var/lib/tftpboot/pxelinux.cfg
         state: directory
 
+    - name: get hosts
+      xml:
+        path: /var/run/libvirt/network/openshift-cluster.xml
+        xpath: /networkstatus/network/ip/dhcp/host
+        content: attribute
+      register: xml_net
+      delegate_to: localhost
+      become: true
+
+    - name: set masters info
+      set_fact:
+        master_macs: "{{ master_macs|default([]) + [{'name': 'master', 'ip_hex': item.host.mac} ]}}"
+      loop: "{{ xml_net.matches }}"
+      when: "'master' in item['host']['name']"
+
+    - name: set bootstrap info
+      set_fact:
+        bootstrap_macs: "{{ bootstrap_macs|default([]) +[{'name': 'bootstrap', 'ip_hex': item.host.mac}] }}"
+      loop: "{{ xml_net.matches }}"
+      when: "'bootstrap' in item['host']['name']"
+
+    - name: set workers info
+      set_fact:
+        worker_macs: "{{ worker_macs|default([]) +[{'name': 'worker', 'ip_hex': item.host.mac}] }}"
+      loop: "{{ xml_net.matches }}"
+      when: "'worker' in item['host']['name']"
+
+    - name: set macs
+      set_fact:
+        macs: "{{ macs|default([]) + [item] }}"
+      loop:
+        - "{{ bootstrap_macs }}"
+        - "{{ master_macs }}"
+        - "{{ worker_macs }}"
+
+
     - name: Create menu file
       copy:
-        dest: /var/lib/tftpboot/pxelinux.cfg/{{ item.ip_hex }}
+        dest: /var/lib/tftpboot/pxelinux.cfg/01-{{ item.ip_hex|replace(':','-')|lower }}
         content: |
           default pxeboot
           prompt 0
           timeout 10
           LABEL pxeboot
-              KERNEL http://www.essi.labs/isos/rhcos-4.1.0-x86_64-installer-kernel
-              APPEND ip=dhcp rd.neednet=1 initrd=http://www.essi.labs/isos/rhcos-4.1.0-x86_64-installer-initramfs.img console=ttyS0 coreos.inst=yes coreos.inst.install_dev=vda coreos.inst.image_url=http://www.essi.labs/isos/rhcos-4.1.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://www.essi.labs/ignition/{{ item.name }}.ign
-      loop:
-        - name: bootstrap
-          ip_hex: C0A8830B
-        - name: master
-          ip_hex: C0A8830C
-        - name: worker
-          ip_hex: default
+              KERNEL http://www.essi.labs/isos/rhcos-{{ ocp_release }}.0-x86_64-installer-kernel
+              APPEND ip=dhcp rd.neednet=1 initrd=http://www.essi.labs/isos/rhcos-{{ ocp_release }}.0-x86_64-installer-initramfs.img console=ttyS0 coreos.inst=yes coreos.inst.install_dev=vda coreos.inst.image_url=http://www.essi.labs/isos/rhcos-{{ ocp_release }}.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://www.essi.labs/ignition/{{ item.name }}.ign
+      loop: "{{ lookup('flattened', macs) }}"
 
     - name: Start and enable {{ item }}
       systemd:
