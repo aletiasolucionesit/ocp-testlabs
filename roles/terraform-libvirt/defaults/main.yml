@@ -19,3 +19,4 @@ master_count: 3
 master_disk: "20G"
 worker_count: 1
 worker_disk: "20G"
+libvirt_pool: "default"

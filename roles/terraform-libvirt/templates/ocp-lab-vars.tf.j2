@@ -27,3 +27,7 @@ variable "worker_disk" {
   default = "{{ worker_disk|human_to_bytes }}"
 }
 
+variable "libvirt_pool"{
+  type = "string"
+  default = "{{ libvirt_pool }}"
+}
