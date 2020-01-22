@@ -12,20 +12,8 @@ resource "libvirt_volume" "os_image" {
   pool = "${var.libvirt_pool}"
 }
 
-resource "libvirt_volume" "ocp-dns-qcow2" {
-  name = "ocp-dns.qcow2"
-  base_volume_id = "${libvirt_volume.os_image.id}"
-  pool = "${var.libvirt_pool}"
-}
-
-resource "libvirt_volume" "ocp-lb-qcow2" {
-  name = "ocp-lb.qcow2"
-  base_volume_id = "${libvirt_volume.os_image.id}"
-  pool = "${var.libvirt_pool}"
-}
-
-resource "libvirt_volume" "ocp-www-qcow2" {
-  name = "ocp-www.qcow2"
+resource "libvirt_volume" "ocp-services-qcow2" {
+  name = "ocp-services.qcow2"
   base_volume_id = "${libvirt_volume.os_image.id}"
   pool = "${var.libvirt_pool}"
 }
@@ -71,52 +59,16 @@ resource "libvirt_cloudinit_disk" "commoninit" {
 
 
 # Create the machines
-resource "libvirt_domain" "ocp-dns" {
-  name   = "ocp-dns"
+resource "libvirt_domain" "ocp-services" {
+  name   = "ocp-services"
   memory = "2048"
-  vcpu   = 1
-
-  cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
-
-  network_interface {
-    network_name = "openshift-dns"
-    hostname       = "dns.essi.labs}"
-    addresses      = ["192.168.130.10"]
-    mac            = "aa:bb:cc:dd:ee:10"
-    wait_for_lease = true
-  }
-  console {
-    type        = "pty"
-    target_port = "0"
-    target_type = "serial"
-  }
-  console {
-    type        = "pty"
-    target_type = "virtio"
-    target_port = "1"
-  }
-  disk {
-    volume_id = "${libvirt_volume.ocp-dns-qcow2.id}"
-  }
-
-  graphics {
-    type        = "spice"
-    listen_type = "address"
-    autoport    = true
-  }
-}
-
-
-resource "libvirt_domain" "ocp-lb" {
-  name   = "ocp-lb"
-  memory = "2048"
-  vcpu   = 1
+  vcpu   = 2
 
   cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
 
   network_interface {
     network_name = "openshift-cluster"
-    hostname       = "loadbalancer"
+    hostname       = "dns.essi.labs}"
     addresses      = ["192.168.131.10"]
     mac            = "aa:bb:cc:dd:00:10"
     wait_for_lease = true
@@ -132,42 +84,7 @@ resource "libvirt_domain" "ocp-lb" {
     target_port = "1"
   }
   disk {
-    volume_id = "${libvirt_volume.ocp-lb-qcow2.id}"
-  }
-
-  graphics {
-    type        = "spice"
-    listen_type = "address"
-    autoport    = true
-  }
-}
-
-resource "libvirt_domain" "ocp-www" {
-  name   = "ocp-www"
-  memory = "2048"
-  vcpu   = 1
-
-  cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
-
-  network_interface {
-    network_name = "openshift-cluster"
-    hostname       = "www"
-    addresses      = ["192.168.131.20"]
-    mac            = "aa:bb:cc:dd:00:20"
-    wait_for_lease = true
-  }
-  console {
-    type        = "pty"
-    target_port = "0"
-    target_type = "serial"
-  }
-  console {
-    type        = "pty"
-    target_type = "virtio"
-    target_port = "1"
-  }
-  disk {
-    volume_id = "${libvirt_volume.ocp-www-qcow2.id}"
+    volume_id = "${libvirt_volume.ocp-services-qcow2.id}"
   }
 
   graphics {

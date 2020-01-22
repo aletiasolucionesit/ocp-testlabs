@@ -6,17 +6,17 @@
     </nat>
   </forward>
   <bridge name='virbr-ocpcls' stp='on' delay='0'/>
-  <mac address='aa:bb:cc:dd:ee:01'/>
+  <mac address='aa:bb:cc:dd:00:01'/>
   <domain name='essi.labs' localOnly='no'/>
   <dns>
-	  <forwarder addr="192.168.130.10"/>
+    <forwarder addr="8.8.8.8"/>
+    <forwarder domain="essi.labs" addr="192.168.131.10"/>
   </dns>
   <ip address='192.168.131.1' netmask='255.255.255.0'>
     <dhcp>
       <range start='192.168.131.10' end='192.168.131.254'/>
-      <bootp file="pxelinux.0" server="192.168.131.20"/>
-      <host mac='aa:bb:cc:dd:00:10' name='loadbalancer.essi.labs' ip='192.168.131.10'/>
-      <host mac='aa:bb:cc:dd:00:20' name='www.essi.labs' ip='192.168.131.20'/>
+      <bootp file="pxelinux.0" server="192.168.131.10"/>
+      <host mac='aa:bb:cc:dd:00:10' name='dns.essi.labs' ip='192.168.131.10'/>
       <host mac='aa:bb:cc:dd:00:11' name='bootstrap.essi.labs' ip='192.168.131.11'/>
 {% for master in range(1,master_count|int+1) %}
       <host mac='aa:bb:cc:dd:00:2{{ master }}' name='master-{{ master }}.essi.labs' ip='192.168.131.2{{ master }}'/>

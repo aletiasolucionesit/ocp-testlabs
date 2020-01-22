@@ -10,15 +10,13 @@
     enabled: true
     state: started
 
-- name: "configure {{ item }}"
+- name: "configure openshift-cluster"
   virt_net:
     command: define
-    name: "{{ item }}"
-    xml: '{{ lookup("template", "files/"+item+"-net.xml") }}'
-  loop: "{{ ocp_net }}"
+    name: "openshift-cluster"
+    xml: '{{ lookup("template", "files/openshift-cluster-net.xml") }}'
 
-- name: start {{ item }}
+- name: start openshift-cluster
   virt_net:
     state: active
-    name: "{{ item }}"
-  loop: "{{ ocp_net }}"
+    name: "openshift-cluster"

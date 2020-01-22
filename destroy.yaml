@@ -10,11 +10,11 @@
     - name: Add DNS host to play
       add_host:
         hostname: dns.essi.labs
-        ansible_host: 192.168.130.10
+        ansible_host: 192.168.131.10
     - name: Add HTTP host to play
       add_host:
         hostname: www.essi.labs
-        ansible_host: 192.168.131.20
+        ansible_host: 192.168.131.10
     - name: Add HAProxy host to play
       add_host:
         hostname: loadbalancer.essi.labs
@@ -38,3 +38,7 @@
       import_role:
         name: terraform-libvirt
         tasks_from: destroy
+    - name: Destroy openshift-cluster
+      virt_net:
+        name: openshift-cluster
+        state: absent

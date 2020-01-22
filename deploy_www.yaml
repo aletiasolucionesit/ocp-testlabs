@@ -115,6 +115,13 @@
               APPEND ip=dhcp rd.neednet=1 initrd=http://www.essi.labs/isos/rhcos-{{ ocp_release }}.0-x86_64-installer-initramfs.img console=ttyS0 coreos.inst=yes coreos.inst.install_dev=vda coreos.inst.image_url=http://www.essi.labs/isos/rhcos-{{ ocp_release }}.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://www.essi.labs/ignition/{{ item.name }}.ign
       loop: "{{ lookup('flattened', macs) }}"
 
+    - name: Change Listen Port HTTPD
+      lineinfile:
+        path: /etc/httpd/conf/httpd.conf
+        state: present
+        regexp: "^Listen 80"
+        line: "Listen 127.0.0.1:8080"
+
     - name: Start and enable {{ item }}
       systemd:
         name: "{{ item }}"
@@ -132,5 +139,5 @@
         immediate: true
         permanent: true    
       loop:
-        - http
+        - jenkins
         - tftp

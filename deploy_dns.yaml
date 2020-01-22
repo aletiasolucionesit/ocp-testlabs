@@ -48,10 +48,9 @@
       copy:
         dest: /etc/dnsmasq.openshift.addnhosts
         content: |
-          192.168.130.10 dns.essi.labs
           {% set count = namespace(a=0) %}
           {% for machine in xml_net['matches'] %}
-          {{ machine['host']['ip'] }} {{ machine['host']['name'] }}.essi.labs {{ machine['host']['name'] }} {% if 'master' in machine['host']['name'] %} etcd-{{ count.a }}.essi.labs etcd-{{ count.a }} {% set count.a = count.a +1 %}{% elif 'loadbalancer' in machine['host']['name'] %} api.essi.labs api-int.essi.labs {% endif %}
+          {{ machine['host']['ip'] }} {{ machine['host']['name'] }}.essi.labs {{ machine['host']['name'] }} {% if 'master' in machine['host']['name'] %} etcd-{{ count.a }}.essi.labs etcd-{{ count.a }} {% set count.a = count.a +1 %}{% elif 'dns' in machine['host']['name'] %} api.essi.labs api-int.essi.labs www.essi.labs loadbalancer.essi.labs {% endif %}
 
           {% endfor %}
 
