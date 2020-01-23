@@ -1,5 +1,5 @@
 - name: Deploy LoadBlancer machine
-  hosts: loadbalancer.essi.labs
+  hosts: loadbalancer.{{ clusterName }}.{{ baseDomain }}
   remote_user: root
   vars_files:
     - vars/default.yaml

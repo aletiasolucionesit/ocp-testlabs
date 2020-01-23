@@ -1,6 +1,8 @@
 - name: Prepare KVM Virtual machines
   hosts: localhost
   gather_facts: false
+  vars_files:
+    - vars/default.yaml
   pre_tasks:
     - name: check if sudo is passwordless
       debug:
@@ -9,21 +11,23 @@
   tasks:
     - name: Add DNS host to play
       add_host:
-        hostname: dns.essi.labs
-        ansible_host: 192.168.131.10
+        hostname: dns.{{ clusterName }}.{{ baseDomain }}
+        ansible_host: "{{ baseIP }}.10"
     - name: Add HTTP host to play
       add_host:
-        hostname: www.essi.labs
-        ansible_host: 192.168.131.10
+        hostname: www.{{ clusterName }}.{{ baseDomain }}
+        ansible_host: "{{ baseIP }}.10"
     - name: Add HAProxy host to play
       add_host:
-        hostname: loadbalancer.essi.labs
-        ansible_host: 192.168.131.10
+        hostname: loadbalancer.{{ clusterName }}.{{ baseDomain }}
+        ansible_host: "{{ baseIP }}.10"
 
 - name: Unsubscribe systems
-  hosts: "*.essi.labs"
+  hosts: "*.{{ clusterName }}.{{ baseDomain }}"
   gather_facts: true
   remote_user: root
+  vars_files:
+    - vars/default.yaml
   tasks:
     - name: Unsibscribe
       redhat_subscription:

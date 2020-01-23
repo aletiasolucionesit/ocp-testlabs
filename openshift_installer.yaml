@@ -1,11 +1,9 @@
 - name: Prepare openshift-install
-  hosts: www.essi.labs
+  hosts: www.{{ clusterName }}.{{ baseDomain }}
   gather_facts: false
   remote_user: root
   vars_files:
     - vars/default.yaml
-  vars:
-    ocp_release: "4.2"
 
   tasks:
     - name: get release
@@ -39,3 +37,35 @@
       copy:
         src: files/Instructions.md
         dest: "{{ ocp_install_dir }}/Instructions.md"
+
+    - name: Create install-config.yaml
+      copy:
+        dest: "{{ ocp_install_dir }}/install-config.yaml"
+        content: |
+          apiVersion: v1
+          baseDomain: {{ baseDomain }}
+          compute:
+          - hyperthreading: Enabled
+            name: worker
+            platform: {}
+            replicas: 0
+          controlPlane:
+            hyperthreading: Enabled
+            name: master
+            platform: {}
+            replicas: 3
+          metadata:
+            creationTimestamp: null
+            name: {{ clusterName }}
+          networking:
+            clusterNetwork:
+            - cidr: 10.128.0.0/14
+              hostPrefix: 23
+            networkType: OpenShiftSDN
+            serviceNetwork:
+            - 172.30.0.0/16
+          platform:
+            none: {}
+          pullSecret: '{{ lookup('file', pull_secret_path) }}'
+          sshKey: '{{ lookup('file', ssh_key_path) }}'
+

@@ -1,5 +1,5 @@
 - name: Deploy WWW machine
-  hosts: www.essi.labs
+  hosts: www.{{ clusterName }}.{{ baseDomain }}
   remote_user: root
   vars_files:
     - vars/default.yaml
@@ -26,6 +26,9 @@
         - firewalld
         - tftp-server
         - syslinux
+        - nfs-utils
+        - bash-completion
+        - vim
 
     - name: Create www directories
       file:
@@ -111,8 +114,8 @@
           prompt 0
           timeout 10
           LABEL pxeboot
-              KERNEL http://www.essi.labs/isos/rhcos-{{ ocp_release }}.0-x86_64-installer-kernel
-              APPEND ip=dhcp rd.neednet=1 initrd=http://www.essi.labs/isos/rhcos-{{ ocp_release }}.0-x86_64-installer-initramfs.img console=ttyS0 coreos.inst=yes coreos.inst.install_dev=vda coreos.inst.image_url=http://www.essi.labs/isos/rhcos-{{ ocp_release }}.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://www.essi.labs/ignition/{{ item.name }}.ign
+              KERNEL http://www.{{ clusterName }}.{{ baseDomain }}/isos/rhcos-{{ ocp_release }}.0-x86_64-installer-kernel
+              APPEND ip=dhcp rd.neednet=1 initrd=http://www.{{ clusterName }}.{{ baseDomain }}/isos/rhcos-{{ ocp_release }}.0-x86_64-installer-initramfs.img console=ttyS0 coreos.inst=yes coreos.inst.install_dev=vda coreos.inst.image_url=http://www.{{ clusterName }}.{{ baseDomain }}/isos/rhcos-{{ ocp_release }}.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://www.{{ clusterName }}.{{ baseDomain }}/ignition/{{ item.name }}.ign
       loop: "{{ lookup('flattened', macs) }}"
 
     - name: Change Listen Port HTTPD
@@ -131,6 +134,7 @@
         - httpd
         - firewalld
         - tftp
+        - nfs-server
 
     - name: Create firewall rules
       firewalld:
@@ -141,3 +145,4 @@
       loop:
         - jenkins
         - tftp
+        - nfs

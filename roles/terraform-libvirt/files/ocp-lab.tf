@@ -68,8 +68,8 @@ resource "libvirt_domain" "ocp-services" {
 
   network_interface {
     network_name = "openshift-cluster"
-    hostname       = "dns.essi.labs}"
-    addresses      = ["192.168.131.10"]
+    hostname       = "dns.{{ clusterName }}.{{ baseDomain }}"
+    addresses      = ["{{ baseIP }}.10"]
     mac            = "aa:bb:cc:dd:00:10"
     wait_for_lease = true
   }
@@ -109,7 +109,7 @@ resource "libvirt_domain" "ocp-bootstrap" {
   network_interface {
     network_name = "openshift-cluster"
     hostname       = "bootstrap"
-    addresses      = ["192.168.131.11"]
+    addresses      = ["{{ baseIP }}.11"]
     mac            = "aa:bb:cc:dd:00:11"
     wait_for_lease = true
   }
@@ -150,7 +150,7 @@ resource "libvirt_domain" "ocp-master" {
   network_interface {
     network_name = "openshift-cluster"
     hostname       = "master-${count.index+1}"
-    addresses      = ["192.168.131.2${count.index+1}"]
+    addresses      = ["{{ baseIP }}.2${count.index+1}"]
     mac            = "aa:bb:cc:dd:00:2${count.index+1}"
     wait_for_lease = true
   }
@@ -191,7 +191,7 @@ resource "libvirt_domain" "ocp-worker" {
   network_interface {
     network_name = "openshift-cluster"
     hostname       = "worker-${count.index+1}"
-    addresses      = ["192.168.131.4${count.index+1}"]
+    addresses      = ["{{ baseIP }}.4${count.index+1}"]
     mac            = "aa:bb:cc:dd:00:4${count.index+1}"
     wait_for_lease = true
   }

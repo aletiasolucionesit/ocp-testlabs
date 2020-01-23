@@ -19,3 +19,7 @@ master_count: 3
 master_disk: "20G"
 worker_count: 1
 worker_disk: "20G"
+baseDomain: labs
+clusterName: essi
+ocp_release: "4.2"
+baseIP: 192.168.131

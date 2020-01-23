@@ -7,22 +7,22 @@
   </forward>
   <bridge name='virbr-ocpcls' stp='on' delay='0'/>
   <mac address='aa:bb:cc:dd:00:01'/>
-  <domain name='essi.labs' localOnly='no'/>
+  <domain name='{{ clusterName }}.{{ baseDomain }}' localOnly='no'/>
   <dns>
     <forwarder addr="8.8.8.8"/>
-    <forwarder domain="essi.labs" addr="192.168.131.10"/>
+    <forwarder domain="{{ clusterName }}.{{ baseDomain }}" addr="{{ baseIP }}.10"/>
   </dns>
-  <ip address='192.168.131.1' netmask='255.255.255.0'>
+  <ip address='{{ baseIP }}.1' netmask='255.255.255.0'>
     <dhcp>
-      <range start='192.168.131.10' end='192.168.131.254'/>
-      <bootp file="pxelinux.0" server="192.168.131.10"/>
-      <host mac='aa:bb:cc:dd:00:10' name='dns.essi.labs' ip='192.168.131.10'/>
-      <host mac='aa:bb:cc:dd:00:11' name='bootstrap.essi.labs' ip='192.168.131.11'/>
+      <range start='{{ baseIP }}.10' end='{{ baseIP }}.254'/>
+      <bootp file="pxelinux.0" server="{{ baseIP }}.10"/>
+      <host mac='aa:bb:cc:dd:00:10' name='dns.{{ clusterName }}.{{ baseDomain }}' ip='{{ baseIP }}.10'/>
+      <host mac='aa:bb:cc:dd:00:11' name='bootstrap.{{ clusterName }}.{{ baseDomain }}' ip='{{ baseIP }}.11'/>
 {% for master in range(1,master_count|int+1) %}
-      <host mac='aa:bb:cc:dd:00:2{{ master }}' name='master-{{ master }}.essi.labs' ip='192.168.131.2{{ master }}'/>
+      <host mac='aa:bb:cc:dd:00:2{{ master }}' name='master-{{ master }}.{{ clusterName }}.{{ baseDomain }}' ip='{{ baseIP }}.2{{ master }}'/>
 {% endfor %}
 {% for worker in range(1,worker_count|int+1) %}
-      <host mac='aa:bb:cc:dd:00:4{{ worker }}' name='worker-{{ worker }}.essi.labs' ip='192.168.131.4{{ worker }}'/>
+      <host mac='aa:bb:cc:dd:00:4{{ worker }}' name='worker-{{ worker }}.{{ clusterName }}.{{ baseDomain }}' ip='{{ baseIP }}.4{{ worker }}'/>
 {% endfor %}
     </dhcp>
   </ip>
