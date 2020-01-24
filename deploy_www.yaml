@@ -125,6 +125,19 @@
         regexp: "^Listen 80"
         line: "Listen 127.0.0.1:8080"
 
+    - name: Create OCP_registry directory
+      file:
+        path: /OCP_registry
+        group: nfsnobody
+        state: directory
+        mode: 775
+        owner: nfsnobody
+
+    - name: Create exports
+      copy:
+        dest: /etc/exports.d/registry.exports
+        content: "/OCP_registry *(rw,sync,no_wdelay,no_root_squash,insecure,fsid=0)"
+
     - name: Start and enable {{ item }}
       systemd:
         name: "{{ item }}"

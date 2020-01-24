@@ -69,3 +69,62 @@
           pullSecret: '{{ lookup('file', pull_secret_path) }}'
           sshKey: '{{ lookup('file', ssh_key_path) }}'
 
+    - name: Create symlink to install-config
+      file:
+        src: "{{ ocp_install_dir }}/install-config.yaml"
+        dest: "{{ ocp_install_dir }}/install-config.yaml.hardlink"
+        state: hard
+        force: true
+
+    - name: Create ignition files
+      shell: |
+        cd {{ ocp_install_dir }} && ./openshift-install create ignition-configs
+      async: 15
+      poll: 5
+
+    - name: list files
+      find:
+        paths: "{{ ocp_install_dir }}"
+        patterns: "*.ign"
+      register: ignition_files
+
+    - name: Copy ignition files
+      copy:
+        remote_src: true
+        dest: /var/www/html/ignition
+        src: "{{ item.path }}"
+      loop: "{{ ignition_files.files }}"
+
+    - name: get hosts
+      virt:
+        command: list_vms
+      register: machines
+      delegate_to: localhost
+      become: true
+
+    - name: Start machines
+      virt:
+        command: start
+        name: "{{ item }}"
+      loop: "{{ machines.list_vms }}"
+      when: "'master' in item or 'bootstrap' in item or 'worker' in item"
+      become: true
+      delegate_to: localhost
+
+    - name: Run bootstrap
+      shell: "cd {{ ocp_install_dir }} && ./openshift-install wait-for bootstrap-complete --log-level debug"
+      async: 1800
+      poll: 0
+      register: bootstrap
+
+    - name: Wait for bootstrap for complete
+      async_status:
+        jid: "{{ bootstrap.ansible_job_id }}"
+      register: job_result
+      until: job_result.finished
+      retries: 60
+      delay: 30
+
+
+
+
