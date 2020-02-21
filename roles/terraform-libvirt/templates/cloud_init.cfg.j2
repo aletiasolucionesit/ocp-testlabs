@@ -20,6 +20,6 @@ chpasswd:
 users:
   - name: root
     ssh-authorized-keys:
-      -  {{ lookup('file', ssh_key_path) }}
+      -  "{{ lookup('file', ssh_key_path) }}"
 bootcmd:
-  - sed -i 's/.*UseDNS.*/UseDNS no/' /etc/ssh/sshd_config
+  - sed -i 's/.*UseDNS.*/UseDNS no\n/' /etc/ssh/sshd_config
