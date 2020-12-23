@@ -49,10 +49,10 @@
         group: apache
         mode: 0644
       loop:
-        - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/{{ ocp_release }}/{{ ocp_release }}.0/rhcos-{{ ocp_release }}.0-x86_64-installer-initramfs.img
-        - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/{{ ocp_release }}/{{ ocp_release }}.0/rhcos-{{ ocp_release }}.0-x86_64-installer-kernel
-        - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/{{ ocp_release }}/{{ ocp_release }}.0/rhcos-{{ ocp_release }}.0-x86_64-installer.iso
-        - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/{{ ocp_release }}/{{ ocp_release }}.0/rhcos-{{ ocp_release }}.0-x86_64-metal-bios.raw.gz
+        - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/{{ ocp_release }}/{{ ocp_release }}.{{ ocp_minor }}/rhcos-{{ ocp_release }}.{{ ocp_minor }}-x86_64-installer-initramfs.img
+        - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/{{ ocp_release }}/{{ ocp_release }}.{{ ocp_minor }}/rhcos-{{ ocp_release }}.{{ ocp_minor }}-x86_64-installer-kernel
+        - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/{{ ocp_release }}/{{ ocp_release }}.{{ ocp_minor }}/rhcos-{{ ocp_release }}.{{ ocp_minor }}-x86_64-installer.iso
+        - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/{{ ocp_release }}/{{ ocp_release }}.{{ ocp_minor }}/rhcos-{{ ocp_release }}.{{ ocp_minor }}-x86_64-metal-bios.raw.gz
 
     - name: Create syslinux files
       copy:
@@ -114,8 +114,8 @@
           prompt 0
           timeout 10
           LABEL pxeboot
-              KERNEL http://www.{{ clusterName }}.{{ baseDomain }}/isos/rhcos-{{ ocp_release }}.0-x86_64-installer-kernel
-              APPEND ip=dhcp rd.neednet=1 initrd=http://www.{{ clusterName }}.{{ baseDomain }}/isos/rhcos-{{ ocp_release }}.0-x86_64-installer-initramfs.img console=ttyS0 coreos.inst=yes coreos.inst.install_dev=vda coreos.inst.image_url=http://www.{{ clusterName }}.{{ baseDomain }}/isos/rhcos-{{ ocp_release }}.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://www.{{ clusterName }}.{{ baseDomain }}/ignition/{{ item.name }}.ign
+              KERNEL http://www.{{ clusterName }}.{{ baseDomain }}/isos/rhcos-{{ ocp_release }}.{{ ocp_minor }}-x86_64-installer-kernel
+              APPEND ip=dhcp rd.neednet=1 initrd=http://www.{{ clusterName }}.{{ baseDomain }}/isos/rhcos-{{ ocp_release }}.{{ ocp_minor }}-x86_64-installer-initramfs.img console=ttyS0 coreos.inst=yes coreos.inst.install_dev=vda coreos.inst.image_url=http://www.{{ clusterName }}.{{ baseDomain }}/isos/rhcos-{{ ocp_release }}.{{ ocp_minor }}-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://www.{{ clusterName }}.{{ baseDomain }}/ignition/{{ item.name }}.ign
       loop: "{{ lookup('flattened', macs) }}"
 
     - name: Change Listen Port HTTPD
