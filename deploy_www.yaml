@@ -17,18 +17,10 @@
         - ansible_distribution == "RedHat"
         - ( rh_user is defined and rh_pass is defined)
 
-    - name: Install {{ item }} package
+    - name: Install packages
       yum:
-        name: "{{ item }}"
+        name: "{{ www_packages }}"
         state: latest
-      loop:
-        - httpd
-        - firewalld
-        - tftp-server
-        - syslinux
-        - nfs-utils
-        - bash-completion
-        - vim
 
     - name: Create www directories
       file:
@@ -40,30 +32,54 @@
       loop:
         - isos
         - ignition
-
-    - name: Get rhcos iso files
-      get_url:
-        dest: /var/www/html/isos
-        url: "{{ item }}"
-        owner: apache
-        group: apache
-        mode: 0644
+    
+    - name: Sets default ACL for joe on /etc/foo.d/
+      acl:
+        path: /var/www/html/{{ item }} 
+        entity: apache
+        etype: user
+        permissions: rwx
+        default: yes
+        state: present
       loop:
-        - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/{{ ocp_release }}/{{ ocp_release }}.{{ ocp_minor }}/rhcos-{{ ocp_release }}.{{ ocp_minor }}-x86_64-installer-initramfs.img
-        - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/{{ ocp_release }}/{{ ocp_release }}.{{ ocp_minor }}/rhcos-{{ ocp_release }}.{{ ocp_minor }}-x86_64-installer-kernel
-        - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/{{ ocp_release }}/{{ ocp_release }}.{{ ocp_minor }}/rhcos-{{ ocp_release }}.{{ ocp_minor }}-x86_64-installer.iso
-        - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/{{ ocp_release }}/{{ ocp_release }}.{{ ocp_minor }}/rhcos-{{ ocp_release }}.{{ ocp_minor }}-x86_64-metal-bios.raw.gz
+        - isos
+        - ignition
+
+    - name: version 4.3-
+      when: ocp_release |float <= 4.3
+      block:
+      - name: Get rhcos iso files
+        get_url:
+          dest: /var/www/html/isos
+          url: "{{ item }}"
+          owner: apache
+          group: apache
+          mode: 0644
+        loop:
+          - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/{{ ocp_release }}/{{ ocp_release }}.{{ ocp_minor }}/rhcos-{{ ocp_release }}.{{ ocp_minor }}-x86_64-installer-initramfs.x86_64.img
+          - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/{{ ocp_release }}/{{ ocp_release }}.{{ ocp_minor }}/rhcos-{{ ocp_release }}.{{ ocp_minor }}-x86_64-installer-kernel-x86_64
+          - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/{{ ocp_release }}/{{ ocp_release }}.{{ ocp_minor }}/rhcos-{{ ocp_release }}.{{ ocp_minor }}-x86_64-metal.x86_64.raw.gz
+
+    - name: version 4.4+
+      when: ocp_release |float >= 4.4
+      block:
+      - name: Get rhcos iso files
+        get_url:
+          dest: /var/www/html/isos
+          url: "{{ item }}"
+          owner: apache
+          group: apache
+          mode: 0644
+        loop:
+          - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/{{ ocp_release }}/{{ ocp_release }}.{{ ocp_minor }}/rhcos-{{ ocp_release }}.{{ ocp_minor }}-x86_64-live-initramfs.x86_64.img
+          - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/{{ ocp_release }}/{{ ocp_release }}.{{ ocp_minor }}/rhcos-{{ ocp_release }}.{{ ocp_minor }}-x86_64-live-kernel-x86_64
+          - https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/{{ ocp_release }}/{{ ocp_release }}.{{ ocp_minor }}/rhcos-{{ ocp_release }}.{{ ocp_minor }}-x86_64-live-rootfs.x86_64.img
 
     - name: Create syslinux files
       copy:
-        dest: /var/lib/tftpboot/{{ item }} 
-        src: /usr/share/syslinux/{{ item }}
+        dest: /var/lib/tftpboot/
+        src: /usr/share/syslinux/
         remote_src: yes
-      loop:
-        - pxelinux.0
-        - menu.c32
-        - mboot.c32
-        - chain.c32
 
     - name: Create pxelinux.cfg directory
       file:
@@ -103,20 +119,37 @@
       loop:
         - "{{ bootstrap_macs }}"
         - "{{ master_macs }}"
-        - "{{ worker_macs }}"
+        - "{{ worker_macs | default([]) }}"
 
+    - name: version 4.3-
+      when: ocp_release |float <= 4.3
+      block:
+      - name: Create menu file
+        copy:
+          dest: /var/lib/tftpboot/pxelinux.cfg/01-{{ item.ip_hex|replace(':','-')|lower }}
+          content: |
+            default pxeboot
+            prompt 0
+            timeout 10
+            LABEL pxeboot
+                KERNEL http://www.{{ clusterName }}.{{ baseDomain }}/isos/rhcos-{{ ocp_release }}.{{ ocp_minor }}-x86_64-installer-kernel-x86_64
+                APPEND ip=dhcp rd.neednet=1 initrd=http://www.{{ clusterName }}.{{ baseDomain }}/isos/rhcos-{{ ocp_release }}.{{ ocp_minor }}-x86_64-installer-initramfs.x86_64.img console=ttyS0 coreos.inst=yes coreos.inst.install_dev=vda coreos.inst.image_url=http://www.{{ clusterName }}.{{ baseDomain }}/isos/rhcos-{{ ocp_release }}.{{ ocp_minor }}-x86_64-metal.x86_64.raw.gz coreos.inst.ignition_url=http://www.{{ clusterName }}.{{ baseDomain }}/ignition/{{ item.name }}.ign
+        loop: "{{ lookup('flattened', macs) }}"
 
-    - name: Create menu file
-      copy:
-        dest: /var/lib/tftpboot/pxelinux.cfg/01-{{ item.ip_hex|replace(':','-')|lower }}
-        content: |
-          default pxeboot
-          prompt 0
-          timeout 10
-          LABEL pxeboot
-              KERNEL http://www.{{ clusterName }}.{{ baseDomain }}/isos/rhcos-{{ ocp_release }}.{{ ocp_minor }}-x86_64-installer-kernel
-              APPEND ip=dhcp rd.neednet=1 initrd=http://www.{{ clusterName }}.{{ baseDomain }}/isos/rhcos-{{ ocp_release }}.{{ ocp_minor }}-x86_64-installer-initramfs.img console=ttyS0 coreos.inst=yes coreos.inst.install_dev=vda coreos.inst.image_url=http://www.{{ clusterName }}.{{ baseDomain }}/isos/rhcos-{{ ocp_release }}.{{ ocp_minor }}-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://www.{{ clusterName }}.{{ baseDomain }}/ignition/{{ item.name }}.ign
-      loop: "{{ lookup('flattened', macs) }}"
+    - name: version 4.4+
+      when: ocp_release |float >= 4.4
+      block:
+      - name: Create menu file
+        copy:
+          dest: /var/lib/tftpboot/pxelinux.cfg/01-{{ item.ip_hex|replace(':','-')|lower }}
+          content: |
+            default pxeboot
+            prompt 0
+            timeout 10
+            LABEL pxeboot
+                KERNEL http://www.{{ clusterName }}.{{ baseDomain }}/isos/rhcos-{{ ocp_release }}.{{ ocp_minor }}-x86_64-live-kernel-x86_64
+                APPEND ip=dhcp rd.neednet=1 initrd=http://www.{{ clusterName }}.{{ baseDomain }}/isos/rhcos-{{ ocp_release }}.{{ ocp_minor }}-x86_64-live-initramfs.x86_64.img console=ttyS0 coreos.inst.install_dev=vda coreos.live.rootfs_url=http://www.{{ clusterName }}.{{ baseDomain }}/isos/rhcos-{{ ocp_release }}.{{ ocp_minor }}-x86_64-live-rootfs.x86_64.img coreos.inst.ignition_url=http://www.{{ clusterName }}.{{ baseDomain }}/ignition/{{ item.name }}.ign
+        loop: "{{ lookup('flattened', macs) }}"
 
     - name: Change Listen Port HTTPD
       lineinfile:
@@ -146,3 +179,12 @@
         - jenkins
         - tftp
         - nfs
+
+    - name: copy supplemantal directories
+      copy:
+        src: "{{ item }}"
+        dest: /root/
+      loop:
+        - LDAP
+        - REGISTRY
+

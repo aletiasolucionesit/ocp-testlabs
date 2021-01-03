@@ -1,0 +1,10 @@
+## Create NFS directory
+mkdir -p /OCP/registry
+
+cat <<EOF>> /etc/exports
+/OCP/registry *(rw,async,no_wdelay)
+EOF
+
+exportfs -raf
+
+exportfs -v

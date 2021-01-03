@@ -1,0 +1,35 @@
+## CONFIGURE AND START IPA SERVER
+First must be run `init-IPA.sh`, and fill necessary.
+Once finished connect to a different terminal and run `podman rm -f freeipa-server`
+
+Once removed start ipa with `start-IPA.sh`
+
+Connect to IPA with `podman exec -it freeipa-server-container /bin/bash`
+And create user:
+```
+kinit admin
+ipa user-add
+ipa user-mod --password <user>
+```
+
+Now lets extract certificate
+`podman exec freeipa-server-container cat /etc/ipa/ca.crt > ipa.crt`
+
+
+## Configure OpenShift
+Insert OCP CA in bastion
+```
+oc exec -n openshift-authentication <oauth-openshift-pod> cat /run/secrets/kubernetes.io/serviceaccount/ca.crt > /etc/pki/ca-trust/source/anchors/ingress-ca.crt
+update-ca-trust
+```
+
+Create ldap-secret
+`oc create secret generic  -n openshift-config ldap-secret --from-literal=bindPassword=<ldap-password>`
+
+And create IPA CA ConfigMap
+`oc create configmap -n openshift-config ca-config-map --from-file=ca.crt=/path/to/ipa-crt`
+
+Now modify oauth-ldap.yaml as needed and apply it
+`oc apply -f oauth-ldap.yaml`
+
+Ready to LOGIN!

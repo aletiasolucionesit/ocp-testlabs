@@ -31,3 +31,38 @@ variable "libvirt_pool"{
   type = "string"
   default = "{{ libvirt_pool }}"
 }
+
+variable "services_memory" {
+  type = "string"
+  default = "{{ services_memory }}"
+}
+
+variable "bootstrap_memory" {
+  type = "string"
+  default = "{{ bootstrap_memory }}"
+}
+
+variable "masters_memory" {
+  type = "string"
+  default = "{{ masters_memory }}"
+}
+
+variable "workers_memory" {
+  type = "string"
+  default = "{{ workers_memory }}"
+}
+
+variable "masters_vcpu" {
+  type = "string"
+  default = "{{ masters_vcpu }}"
+}
+
+variable "workers_vcpu" {
+  type = "string"
+  default = "{{ workers_vcpu }}"
+}
+
+variable "bootstrap_vcpu" {
+  type = "string"
+  default = "{{ bootstrap_vcpu }}"
+}

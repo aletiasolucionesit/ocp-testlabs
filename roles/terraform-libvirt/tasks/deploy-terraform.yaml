@@ -44,13 +44,13 @@
     dest: "{{ terraform_dir }}/{{ item }}"
   loop:
     - network_config.cfg
-    - ocp-lab.tf
 
 - name: copy config data
   template:
     src: "{{ item }}.j2"
     dest: "{{ terraform_dir }}/{{ item }}"
   loop:
+    - ocp-lab.tf
     - ocp-lab-vars.tf
     - cloud_init.cfg
 

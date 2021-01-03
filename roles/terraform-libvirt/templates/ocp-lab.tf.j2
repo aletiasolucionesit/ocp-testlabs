@@ -61,9 +61,8 @@ resource "libvirt_cloudinit_disk" "commoninit" {
 # Create the machines
 resource "libvirt_domain" "ocp-services" {
   name   = "ocp-services"
-  memory = "2048"
-  vcpu   = 2
-
+  memory = "${var.services_memory}"
+  vcpu = 2 
   cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
 
   network_interface {
@@ -96,8 +95,8 @@ resource "libvirt_domain" "ocp-services" {
 
 resource "libvirt_domain" "ocp-bootstrap" {
   name   = "ocp-bootstrap"
-  memory = "4096"
-  vcpu   = 2
+  memory = "${var.bootstrap_memory}"
+  vcpu   = "${var.bootstrap_vcpu}"
 
   #cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
   boot_device {
@@ -137,8 +136,8 @@ resource "libvirt_domain" "ocp-bootstrap" {
 resource "libvirt_domain" "ocp-master" {
   count = "${var.master_count}"
   name   = "ocp-master-${count.index+1}"
-  memory = "6144"
-  vcpu   = 4
+  memory = "${var.masters_memory}"
+  vcpu   = "${var.masters_vcpu}"
 
   #cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
   boot_device {
@@ -178,8 +177,8 @@ resource "libvirt_domain" "ocp-master" {
 resource "libvirt_domain" "ocp-worker" {
   count = "${var.worker_count}"
   name   = "ocp-worker-${count.index+1}"
-  memory = "6144"
-  vcpu   = 4
+  memory = "${var.workers_memory}"
+  vcpu   = "${var.workers_vcpu}"
 
   #cloudinit = "${libvirt_cloudinit_disk.commoninit.id}"
   boot_device {

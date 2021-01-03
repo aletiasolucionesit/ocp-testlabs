@@ -32,7 +32,7 @@
   tasks:
     - name: Pausing for systems become ready
       pause:
-        seconds: 30
+        seconds: 45
 
     - name: Systems are ready
       debug:

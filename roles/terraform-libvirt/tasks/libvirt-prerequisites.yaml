@@ -9,6 +9,7 @@
     name: libvirtd
     enabled: true
     state: started
+  become: true
 
 - name: "configure openshift-cluster"
   virt_net:

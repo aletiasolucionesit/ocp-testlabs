@@ -16,6 +16,24 @@
     path: ~/.terraform.d/plugins
     state: directory
 
-- name: install terraform-livbirt
-  shell: "GOBIN=~/.terraform.d/plugins go get -u github.com/dmacvicar/terraform-provider-libvirt"
+- name: Confirm /tmp/buildtree directory exists
+  file:
+    path: /tmp/buildtree
+    state: directory
+    mode: 1755
 
+- name: Prepare the provider
+  git:
+    repo: https://github.com/dmacvicar/terraform-provider-libvirt.git
+    dest: /tmp/buildtree/terraform-provider-libvirt
+    
+- name: Build the provider
+  make:
+    chdir: /tmp/buildtree/terraform-provider-libvirt
+
+- name: Install the provider plugin plugin
+  copy:
+    remote_src: yes
+    src: /tmp/buildtree/terraform-provider-libvirt/terraform-provider-libvirt
+    dest: ~/.terraform.d/plugins/
+    mode: 0755

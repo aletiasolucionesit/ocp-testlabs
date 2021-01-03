@@ -15,8 +15,15 @@ libvirt_packages:
 terraform_dir: "~/ocp-terraform"
 qcow2_image: "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1907.qcow2"
 image_found: false
+bootstrap_vcpu: 2
 master_count: 3
-master_disk: "20G"
+masters_vcpu: 2
+master_disk: "50G"
 worker_count: 1
-worker_disk: "20G"
+workers_vcpu: 2
+worker_disk: "50G"
 libvirt_pool: "default"
+services_memory: "2048"
+bootstrap_memory: "8192"
+masters_memory: "8192"
+workers_memory: "4096"

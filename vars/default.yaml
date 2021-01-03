@@ -1,6 +1,20 @@
 ---
 # defaults file for terraform-libvirt
 root_pass: redhat
+www_packages:
+  - httpd
+  - firewalld
+  - tftp-server
+  - syslinux
+  - nfs-utils
+  - bash-completion
+  - vim
+  - tcpdump
+  - wget
+  - podman
+  - openldap-clients
+  - git
+
 libvirt_packages:
   - bridge-utils 
   - libvirt 
@@ -10,17 +24,25 @@ libvirt_packages:
   - virt-top
   - libguestfs-tools
   - virt-manager
-  - python2-lxml
+#  - python2-lxml
   - python3-lxml
 terraform_dir: "~/ocp-terraform"
-qcow2_image: "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1907.qcow2"
+#qcow2_image: "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1907.qcow2"
+qcow2_image: "/var/lib/libvirt/images/CentOS-8-GenericCloud-8.3.2011-20201204.2.x86_64.qcow2"
 image_found: false
-master_count: 3
-master_disk: "20G"
-worker_count: 1
-worker_disk: "20G"
+master_count: 1
+master_disk: "30G"
+worker_count: 3
+worker_disk: "30G"
 baseDomain: labs
-clusterName: essi
-ocp_release: "4.6"
-ocp_minor: "8"
+clusterName: aletia
+ocp_release: "4.3"
+ocp_minor: "33"
 baseIP: 192.168.131
+#masters_memory: "12288"
+#masters_memory: "16384"
+masters_memory: "24576"
+workers_memory: "8192"
+bootstrap_memory: "24576"
+bootstrap_vcpu: 4
+masters_vcpu: 4

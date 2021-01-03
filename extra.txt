@@ -1,0 +1,12 @@
+All-in-One OpenShift node
+Before OpenShift 4.4, if you configured just one single master node the OpenShift installer will go through with no problems, but starting in OpenShift 4.4 the way that the ETCD cluster is installed and managed has changed. Now the Cluster ETCD operator must allow having just one node as Master (so having no ETCD quorum). This is done using the pretty weird (and auto-explanatory) variable `useUnsupportedUnsafeNonHANonProductionUnstableEtcd` as you can see in this BUG
+
+
+You have to wait until the Kubernetes API is ready after launching the install and then apply this patch:
+
+```bash
+oc --kubeconfig auth/kubeconfig patch etcd cluster -p='{"spec": {"unsupportedConfigOverrides": {"useUnsupportedUnsafeNonHANonProductionUnstableEtcd": true}}}' --type=merge
+```
+
+Just in case you didn’t notice in the variable name, this is not supported, unstable, not safe and for non HA (of course) environments.
+Why not all variables are named as this one? We could just get rid of documentation in that case.
