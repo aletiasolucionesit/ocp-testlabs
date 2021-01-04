@@ -188,3 +188,10 @@
         - LDAP
         - REGISTRY
 
+    - name: disable SELINUX
+      selinux:
+        state: permissive
+
+    - name: disable SELINUX II
+      shell: setenforce permissive
+
