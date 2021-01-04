@@ -28,6 +28,7 @@
         content: |
           local=/{{ clusterName }}.{{ baseDomain }}/
           address=/apps.{{ clusterName }}.{{ baseDomain }}/{{ baseIP }}.10
+          address=/ipa.{{ clusterName }}.{{ baseDomain }}/{{ baseIP}}.10
           {% for master in range(1,master_count|int+1) %} 
           srv-host=_etcd-server-ssl._tcp.{{ clusterName }}.{{ baseDomain }},master-{{ master }}.{{ clusterName }}.{{ baseDomain }},2380,0,10
 

@@ -8,3 +8,20 @@ EOF
 exportfs -raf
 
 exportfs -v
+
+## Create OCP resources
+cd /root/REGISTRY
+oc create -f registry-pv.yaml
+
+oc project openshift-image-registry
+oc create -f registry-pvc.yaml
+oc edit config cluster
+--------
+spec:
+  ...
+  storage:
+    pvc:
+      claim: registry-pvc
+-------
+
+oc delete pod <registry-operator-pod>
