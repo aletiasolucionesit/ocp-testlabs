@@ -191,6 +191,7 @@
     - name: disable SELINUX
       selinux:
         state: permissive
+        policy: targeted
 
     - name: disable SELINUX II
       shell: setenforce permissive

@@ -1,0 +1,25 @@
+kind: LDAPSyncConfig
+apiVersion: v1
+url: ldap://ipa.aletia.labs
+insecure: true
+bindDN: "uid=admin,cn=users,cn=accounts,dc=aletia,dc=labs"
+bindPassword: aletheia
+rfc2307:
+  groupsQuery:
+    baseDN: "cn=ocpadmin,cn=groups,cn=accounts,dc=aletia,dc=labs"
+    scope: sub
+    derefAliases: never
+    filter: (objectclass=nestedgroup)
+    pagesize: 0
+  groupUIDAttribute: dn
+  groupNameAttributes: [ cn ]
+  groupMembershipAttributes: [ member ]
+  usersQuery:
+      baseDN: "cn=users,cn=accounts,dc=aletia,dc=labs"
+      scope: sub
+      derefAliases: never
+      pageSize: 0
+  userUIDAttribute: dn
+  userNameAttributes: [ uid ]
+  tolerateMemberNotFoundErrors: false
+  tolerateMemberOutOfScopeErrors: false
